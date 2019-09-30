@@ -17,25 +17,42 @@
    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
   Description:
-  Arduino compatible Sky Quality Meter using the TSL2591
+  Sky Quality Meter using the TSL2591
    
-  base in https://github.com/gshau/SQM_TSL2591/
+  base on https://github.com/gshau/SQM_TSL2591/
  
   and BME280 weather sensor 
   
-  and 128x64 OLED display 0.96" (SSD1306) or 1.3" (SH1106)
+  and 128x64 OLED I2C display 0.96" (SSD1306) or 1.3" (SH1106)
 
   Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 
- */
+*/
+#define Version "SQM_1.0"
 
-// setup for OLED1
+
+#include "Config.h"
+
+#include "Setup.h"
+
 #include <SPI.h>
 #include <Wire.h>
 
-#include <U8glib.h>
-//U8GLIB_SSD1306_128X64 OledDisp(U8G_I2C_OPT_NONE);
-U8GLIB_SH1106_128X64 OledDisp(U8G_I2C_OPT_NONE);
+#ifdef SSD1306_ON
+  #define OLED_ON
+  #include <U8glib.h>
+  #define OLED_ON
+  U8GLIB_SSD1306_128X64 OledDisp(U8G_I2C_OPT_NONE);
+#endif
+
+#ifdef SH1106_ON 
+  #ifdef OLED_ON
+     #error "Select olny one display!!!"
+  #endif
+  #define OLED_ON
+  #include <U8glib.h>
+  U8GLIB_SH1106_128X64 OledDisp(U8G_I2C_OPT_NONE);
+#endif
 
 
 // setup for TSL2591
@@ -48,14 +65,25 @@ U8GLIB_SH1106_128X64 OledDisp(U8G_I2C_OPT_NONE);
 BME280I2C bme;
 
 
+
+
 SQM_TSL2591 sqm = SQM_TSL2591(2591);
 void readSQM(void);
 
 void setup() {
+
+pinMode(DisplayOnPin, INPUT_PULLUP);
+pinMode(LedPin, OUTPUT);
+
+
+#ifdef BUZZER_ON
+  pinMode(BuzzerPin, OUTPUT);
+#endif
+  
   Serial.begin(9600);
   Serial.println("Start");
   
-  // pinMode(13, OUTPUT);
+
   if (sqm.begin()) {
 
     Serial.println("Found SQM (TSL) sensor");
@@ -72,15 +100,30 @@ void setup() {
 // add a logo or other text for initialization
 
   // OledDisp.setRot180();
+  
    OledDisp.firstPage();
    do {
-      OledDisp.setFont(u8g_font_unifont);
-      OledDisp.setPrintPos(10, 30);
-      OledDisp.print("  SQM Ready");
+    
+         OledDisp.setContrast(0);   
+         OledDisp.setFont(u8g_font_unifont);
+         OledDisp.setPrintPos(10, 30);
+         OledDisp.print("  SQM Ready");
+         if (digitalRead(DisplayOnPin) == 0) {
+           OledDisp.setPrintPos(10, 45);
+           OledDisp.print(" Display OFF");
+        } 
+      
+    
   } while ( OledDisp.nextPage() );
+#ifdef BUZZER_ON  
+  buzzer(500);
+  delay(500); // Pause for 2 seconds
+#else 
   delay(1000); // Pause for 2 seconds
+#endif
+digitalWrite(LedPin, LED_OFF);
 
-}
+} // end of Setup
 
 void loop() {
   float temp = 0;
@@ -88,7 +131,25 @@ void loop() {
   float pres = 0;
   String SensorID;
 
-  sqm.takeReading();
+  
+#ifdef BUZZER_ON  
+       if (digitalRead(DisplayOnPin) == 0)   {
+
+           b_d_on = 1;
+              if (b_d_off == 1 ) {
+               b_d_off = 0; 
+               buzzer(100);
+            }       
+        } 
+       else   {
+           b_d_off = 1;
+              if (b_d_on == 1 ) {
+               b_d_on = 0; 
+               buzzer(100);
+          }
+       }  
+#endif            
+  
 
   if ( bme.begin()) {
     switch (bme.chipModel())
@@ -107,10 +168,17 @@ void loop() {
     BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
     BME280::PresUnit presUnit(BME280::PresUnit_Pa);
     Serial.print("Get sensord data.");
+  
     bme.read(pres, temp, hum, tempUnit, presUnit);
+    
   } 
+   digitalWrite(LedPin, LED_OFF);
+
+   sqm.takeReading();
+
 
 // write to serial monitor for debugging purposes
+
 //  Serial.print("full:   "); Serial.println(sqm.full);
 //  Serial.print("ir:     "); Serial.println(sqm.ir);
 //  Serial.print("vis:    "); Serial.println(sqm.vis);
@@ -126,11 +194,20 @@ void loop() {
   Serial.print(pres/100);
   Serial.println(" hPa");
   Serial.println("======================================");
-/*
-// write to OLED
- */
+
+
+
+
     OledDisp.firstPage();
     do {
+        if (digitalRead(DisplayOnPin) == 0) {
+           OledDisp.sleepOn();
+           
+        } else   {
+           OledDisp.sleepOff();
+         
+        }  
+     OledDisp.setContrast(0);   
      OledDisp.setFont(u8g_font_unifont);
      OledDisp.setPrintPos(1, 10);
      OledDisp.print("Mag/Arc-Sec T");   
@@ -150,5 +227,8 @@ void loop() {
      OledDisp.print(int(pres/100));
      OledDisp.print("hPa");
     } while( OledDisp.nextPage()); 
+
+    
  delay(2000);
-}
+ // digitalWrite(LedPin, LED_ON);
+ }
