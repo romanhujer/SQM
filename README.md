@@ -1,9 +1,12 @@
 # SQM
-Sky Qaulity Meter Implementations using TSL2591 with Ardruino NANO
+Arduino compatible Sky Quality Meter using the TSL2591
+   
+  base in https://github.com/gshau/SQM_TSL2591/
+ 
+  and BME280 weather sensor 
+  
+  and 128x64 OLED display 0.96" (SSD1306) or 1.3" (SH1106)
 
-Wiring giagram and PCB is on [EasyEDA](https://easyeda.com/hujer.roman/sqm-hr)     
-
-The files for reading the TSL2591 and returning SQM values were downloaded from gshau's SQM_TSL2591 repository
-https://github.com/gshau/SQM_TSL2591/tree/master/SQM_TSL2591.  If the .ino files are used as-is, SQM_TSL2591.cpp and SQM_TSL2591.h must be in the same directory/folder as the .ino file.
+  Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 
 
