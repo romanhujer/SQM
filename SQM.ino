@@ -19,18 +19,8 @@
 
   Description:
    
-  SQM using TSL2591 sensor as a Sky Quality Meter
-  and 128x64 OLED as display
+  SQM using TSL2591 and BME280 sensor and 128x64 OLED as display  128x64  0.96" (SSD1306)  or 1.3" (SH1106)
 
-  Requires Arduino MEGA or MEGA 2560 because of size of code 
-  plus buffer for display
-  
-
-  This code is in the public domain and is based on 
-  Gabe Shaughnessy's example from Oct 21 2017
-
-  RD Beck
-  Jan 2019
  */
 
 // setup for OLED1
@@ -47,7 +37,7 @@ U8GLIB_SH1106_128X64 OledDisp(U8G_I2C_OPT_NONE);
 #include <Adafruit_Sensor.h>
 #include "SQM_TSL2591.h"
 
-// Temperatue sensosr
+// Temperatue sensor
 #include <BME280I2C.h>
 BME280I2C bme;
 
