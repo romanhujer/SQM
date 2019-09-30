@@ -30,7 +30,6 @@
 */
 #define Version "SQM_1.0"
 
-
 #include "Config.h"
 
 #include "Setup.h"
@@ -57,15 +56,14 @@
 
 // setup for TSL2591
 #include <Wire.h>
-#include <Adafruit_Sensor.h>
+// #include <Adafruit_Sensor.h>
 #include "SQM_TSL2591.h"
 
 // Temperatue sensor
 #include <BME280I2C.h>
 BME280I2C bme;
 
-
-
+boolean DisplayON = true;
 
 SQM_TSL2591 sqm = SQM_TSL2591(2591);
 void readSQM(void);
@@ -90,14 +88,12 @@ pinMode(LedPin, OUTPUT);
     sqm.config.gain = TSL2591_GAIN_LOW;
     sqm.config.time = TSL2591_INTEGRATIONTIME_200MS;
     sqm.configSensor();
-    sqm.showConfig();
-    sqm.setCalibrationOffset(0.0);
+ //   sqm.showConfig();
+    sqm.setCalibrationOffset(CALIBRATION_OFFSET);
+ 
   } else{
     Serial.println("SQM sensor not found");
  }
-
-
-// add a logo or other text for initialization
 
   // OledDisp.setRot180();
   
@@ -108,10 +104,10 @@ pinMode(LedPin, OUTPUT);
          OledDisp.setFont(u8g_font_unifont);
          OledDisp.setPrintPos(10, 30);
          OledDisp.print("  SQM Ready");
-         if (digitalRead(DisplayOnPin) == 0) {
-           OledDisp.setPrintPos(10, 45);
-           OledDisp.print(" Display OFF");
-        } 
+//         if (digitalRead(DisplayOnPin) == 0) {
+//           OledDisp.setPrintPos(10, 45);
+//           OledDisp.print(" Display OFF");
+//        } 
       
     
   } while ( OledDisp.nextPage() );
@@ -132,24 +128,19 @@ void loop() {
   String SensorID;
 
   
-#ifdef BUZZER_ON  
-       if (digitalRead(DisplayOnPin) == 0)   {
 
-           b_d_on = 1;
-              if (b_d_off == 1 ) {
-               b_d_off = 0; 
-               buzzer(100);
-            }       
-        } 
-       else   {
-           b_d_off = 1;
-              if (b_d_on == 1 ) {
-               b_d_on = 0; 
-               buzzer(100);
+       if (digitalRead(DisplayOnPin) == 0)   {
+        if (DisplayON){ 
+            DisplayON = false; 
+          } else { 
+            DisplayON = true;
           }
+#ifdef BUZZER_ON  
+            buzzer(200);
+#endif                         
+
        }  
-#endif            
-  
+ 
 
   if ( bme.begin()) {
     switch (bme.chipModel())
@@ -174,6 +165,9 @@ void loop() {
   } 
    digitalWrite(LedPin, LED_OFF);
 
+#ifdef TEMPER_CALIB_ON
+   sqm.setTemperature( temp );
+#endif   
    sqm.takeReading();
 
 
@@ -200,7 +194,7 @@ void loop() {
 
     OledDisp.firstPage();
     do {
-        if (digitalRead(DisplayOnPin) == 0) {
+        if (! DisplayON ) {
            OledDisp.sleepOn();
            
         } else   {
