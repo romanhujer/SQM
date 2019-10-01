@@ -77,10 +77,11 @@ pinMode(LedPin, OUTPUT);
 #ifdef BUZZER_ON
   pinMode(BuzzerPin, OUTPUT);
 #endif
-  
+
+#ifdef DEBUG_ON  
   Serial.begin(9600);
   Serial.println("Start");
-  
+#endif  
 
   if (sqm.begin()) {
 
@@ -91,9 +92,13 @@ pinMode(LedPin, OUTPUT);
  //   sqm.showConfig();
     sqm.setCalibrationOffset(CALIBRATION_OFFSET);
  
-  } else{
+  } 
+#ifdef DEBUG_ON  
+  else{
+
     Serial.println("SQM sensor not found");
  }
+#endif
 
   // OledDisp.setRot180();
   
@@ -104,11 +109,7 @@ pinMode(LedPin, OUTPUT);
          OledDisp.setFont(u8g_font_unifont);
          OledDisp.setPrintPos(10, 30);
          OledDisp.print("  SQM Ready");
-//         if (digitalRead(DisplayOnPin) == 0) {
-//           OledDisp.setPrintPos(10, 45);
-//           OledDisp.print(" Display OFF");
-//        } 
-      
+    
     
   } while ( OledDisp.nextPage() );
 #ifdef BUZZER_ON  
@@ -117,7 +118,8 @@ pinMode(LedPin, OUTPUT);
 #else 
   delay(1000); // Pause for 2 seconds
 #endif
-digitalWrite(LedPin, LED_OFF);
+
+
 
 } // end of Setup
 
@@ -154,28 +156,39 @@ void loop() {
 //        Serial.println("Found BMP280 sensor! No Humidity available.");
         break;
       default:
-        Serial.println("Found UNKNOWN sensor! Error!");
+        SensorID = "UNKNOWN";
+//        Serial.println("Found UNKNOWN sensor! Error!");
     }
     BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
     BME280::PresUnit presUnit(BME280::PresUnit_Pa);
-    Serial.print("Get sensord data.");
   
-    bme.read(pres, temp, hum, tempUnit, presUnit);
+#ifdef DEBUG_ON  
+    Serial.print("Get sensord data.");
+#endif
+
+if ( !DisplayON ) {
+  OledDisp.sleepOn();
+}
+  digitalWrite(LedPin, LED_OFF);
+  bme.read(pres, temp, hum, tempUnit, presUnit);
     
   } 
-   digitalWrite(LedPin, LED_OFF);
+   
 
 #ifdef TEMPER_CALIB_ON
    sqm.setTemperature( temp );
 #endif   
    sqm.takeReading();
 
+   if ( DisplayON ) {
+          OledDisp.sleepOff();
+   }
 
 // write to serial monitor for debugging purposes
-
-//  Serial.print("full:   "); Serial.println(sqm.full);
-//  Serial.print("ir:     "); Serial.println(sqm.ir);
-//  Serial.print("vis:    "); Serial.println(sqm.vis);
+#ifdef DEBUG_ON  
+  Serial.print("full:   "); Serial.println(sqm.full);
+  Serial.print("ir:     "); Serial.println(sqm.ir);
+  Serial.print("vis:    "); Serial.println(sqm.vis);
   Serial.print("Mag/Arc-Sec :  "); Serial.print(sqm.mpsas);
   Serial.print(" ± "); Serial.println(sqm.dmpsas);
   Serial.print("Temp: ");
@@ -188,19 +201,11 @@ void loop() {
   Serial.print(pres/100);
   Serial.println(" hPa");
   Serial.println("======================================");
-
-
-
+#endif
 
     OledDisp.firstPage();
     do {
-        if (! DisplayON ) {
-           OledDisp.sleepOn();
-           
-        } else   {
-           OledDisp.sleepOff();
-         
-        }  
+      
      OledDisp.setContrast(0);   
      OledDisp.setFont(u8g_font_unifont);
      OledDisp.setPrintPos(1, 10);
@@ -221,8 +226,7 @@ void loop() {
      OledDisp.print(int(pres/100));
      OledDisp.print("hPa");
     } while( OledDisp.nextPage()); 
-
     
  delay(2000);
- // digitalWrite(LedPin, LED_ON);
+ 
  }
