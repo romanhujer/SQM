@@ -8,8 +8,11 @@
 bool LED_ON = HIGH;
 bool LED_OFF = LOW;
 
-#define DisplayOnPin 5    // Display On Pin
-#define LedPin 13         // Default LedPin on Adruino Nano
+#define ModePin 5         // Mode Pin
+
+#ifdef STATUS_LED_ON
+   #define LedPin 13        // Status Led Pin
+#endif
 
 #ifdef BUZZER_ON
   #define BuzzerPin  4      // Buzzer Pin
