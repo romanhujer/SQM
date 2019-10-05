@@ -28,7 +28,7 @@
   Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 
 */
-#define Version "1.0"
+#define Version "1.0.1"
 
 #include "Config.h"
 
@@ -63,16 +63,19 @@ BME280I2C bme;
 
 boolean USBmodeON = false;
 boolean InitError = false;
+boolean SerialOK  = false;
+boolean Blik      = false;
+
 String SensorID;
 String BME_MSG;
 String TSL_MSG;
 
 
-// Unihedron protokol 
-String PROTOCOL_NUMBER = "00000002";
-String MODEL_NUMBER =    "00000003";
-String FEATURE_NUMBER =  "00000001";
-String SERIAL_NUMBER =   "00000001";
+// Set Unihedron protokol
+String PROTOCOL_NUMBER = "00000003";
+String MODEL_NUMBER    = "00000003";
+String FEATURE_NUMBER  = "00000003";
+String SERIAL_NUMBER   = "20191005";
 
 
 SQM_TSL2591 sqm = SQM_TSL2591(2591);
@@ -81,7 +84,7 @@ void readSQM(void);
 void setup() {
 
   pinMode(ModePin, INPUT_PULLUP);
-  
+
 #ifdef  STATUS_LED_ON
   pinMode(LedPin, OUTPUT);
 #endif
@@ -113,12 +116,13 @@ void setup() {
         SensorID = "UNKNOWN";
         BME_MSG = "UNKNOWN sensor!";
         InitError = true;
-    } 
-  } 
+    }
+  }
 
 
   if (sqm.begin()) {
-    TSL_MSG = "SQM(TSL) Success";
+    TSL_MSG = "TSL2591  Success";
+    //    TSL_MSG = "SQM(TSL) Success";
 #ifdef DEBUG_ON
     sqm.verbose = true;
 #else
@@ -129,12 +133,12 @@ void setup() {
     sqm.configSensor();
 #ifdef DEBUG_ON
     sqm.showConfig();
-#endif    
+#endif
     sqm.setCalibrationOffset(CALIBRATION_OFFSET);
   }
   else {
-     TSL_MSG = "SQM not found";
-     InitError = true;
+    TSL_MSG = "SQM not found";
+    InitError = true;
   }
   // OledDisp.setRot180();
   OledDisp.firstPage();
@@ -142,24 +146,27 @@ void setup() {
     OledDisp.setContrast(0);
     OledDisp.setFont(u8g_font_unifont);
     OledDisp.setPrintPos(1, 15);
-    OledDisp.print("SQM Version ");
+    OledDisp.print("SQM Ready V");
     OledDisp.print(Version);
     OledDisp.setPrintPos(1, 37);
     OledDisp.print(TSL_MSG);
     OledDisp.setPrintPos(1, 60);
     OledDisp.print(BME_MSG);
-   } while ( OledDisp.nextPage() );
+  } while ( OledDisp.nextPage() );
 
- if (!InitError){
+  if (!InitError) {
 #ifdef BUZZER_ON
     buzzer(500);
 #endif
-  delay(1000); // Pause for 1 seconds
+    delay(1000); // Pause for 1 seconds
 
- } else {
-    for (int _i=0; _i < 10; _i++) {    buzzer(50);  buzzer(50) ; }
-    while(true);
- }
+  } else {
+    for (int _i = 0; _i < 10; _i++) {
+      buzzer(50);
+      buzzer(50) ;
+    }
+    while (true);
+  }
 
 
 } // end of Setup
@@ -173,16 +180,17 @@ void loop() {
   String response = "";
   bool new_data = false;
 
-  // wdt_reset();
+  /// wdt_reset();
 
   if (digitalRead(ModePin) == 0)   {
+    SerialOK  = false;
 #ifdef BUZZER_ON
     if (USBmodeON) {
       buzzer(200);
     }
 #endif
     USBmodeON = false;
-    
+
   }
   else {
 #ifdef BUZZER_ON
@@ -193,7 +201,7 @@ void loop() {
     USBmodeON = true;
     //        OledDisp.sleepOn();
   }
-  
+
   if ( !USBmodeON ) {
     BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
     BME280::PresUnit presUnit(BME280::PresUnit_Pa);
@@ -211,6 +219,9 @@ void loop() {
       OledDisp.setFont(u8g_font_unifont);
       OledDisp.setPrintPos(1, 15);
       OledDisp.print("Mag/Arc-Sec T");
+      if (Blik) {
+        OledDisp.print(" \#");
+      }
       OledDisp.setPrintPos(1, 37);
       OledDisp.print(sqm.mpsas);
       OledDisp.print(" ");
@@ -227,22 +238,28 @@ void loop() {
       OledDisp.print(int(pres / 100));
       OledDisp.print("hPa");
     } while ( OledDisp.nextPage());
+    if (Blik) {
+      Blik = false;
+    } else  {
+      Blik = true;
+    }
 
     delay(2000);
 
   } else {
 
-    OledDisp.firstPage();
-    do {
+    if (!SerialOK) {
+      OledDisp.firstPage();
+      do {
 
-      OledDisp.setContrast(0);
-      OledDisp.setFont(u8g_font_unifont);
-      OledDisp.setPrintPos(1, 37);
-      OledDisp.print("Wait USB data");
-    } while ( OledDisp.nextPage());
-
+        OledDisp.setContrast(0);
+        OledDisp.setFont(u8g_font_unifont);
+        OledDisp.setPrintPos(1, 37);
+        OledDisp.print("Wait USB data");
+      } while ( OledDisp.nextPage());
+    }
     while (Serial.available() > 0) {
-
+      SerialOK  = true;
       if (digitalRead(ModePin) == 0)  break ;  // check end USB mode
 
       BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
@@ -277,13 +294,13 @@ void loop() {
         response = String(response + String(sqm.mpsas, 2) + "m,0000005915Hz,0000000000c,0000000.000s" + temp_string);
         new_data = true;
       }
-#ifdef EXTENDET_PROTOCOL_ON      
-      if (c == 'x') { // My eXtension protocol
-        response = "x,";
+#ifdef EXTENDET_PROTOCOL_ON
+      if (c == 'X') { // My eXtension protocol
+        response = "X,";
         response = String(response) + String(sqm.mpsas, 2) + "m," + String(int(temp)) + "C," + String(int(hum)) + "%," + String(int(pres / 100)) + "hPa";
         new_data = true;
       }
-#endif      
+#endif
       if (new_data) {
         Serial.println(response);
         new_data = false;
@@ -294,8 +311,13 @@ void loop() {
         OledDisp.setContrast(0);
         OledDisp.setFont(u8g_font_unifont);
         OledDisp.setPrintPos(1, 15);
-        OledDisp.print("SQM in USB mode");
+        //     OledDisp.print("SQM in USB mode");
         //     OledDisp.print("Mag/Arc-Sec T");
+        OledDisp.print("Mag/Arc-Sec T");
+        if (Blik) {
+
+          OledDisp.print(" \@");
+        }
         OledDisp.setPrintPos(1, 37);
         OledDisp.print(sqm.mpsas);
         OledDisp.print(char(0xb1));
@@ -308,9 +330,15 @@ void loop() {
         OledDisp.print("H:");
         OledDisp.print(int(hum));
         OledDisp.print("% P:");
-        OledDisp.print(int(pres / 100)); 
+        OledDisp.print(int(pres / 100));
       } while ( OledDisp.nextPage());
+      if (Blik) {
+        Blik = false;
+      } else  {
+        Blik = true;
+      }
+
       delay(100);
-    } 
-  } 
+    }
+  }
 }
