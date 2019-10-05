@@ -32,27 +32,14 @@
 
 #include "Config.h"
 
-#include "Setup.h"
+
 
 #include <SPI.h>
 #include <Wire.h>
-#include <avr/wdt.h>
+// #include <avr/wdt.h>
 
-#ifdef SSD1306_ON
-#define OLED_ON
-#include <U8glib.h>
-#define OLED_ON
-U8GLIB_SSD1306_128X64 OledDisp(U8G_I2C_OPT_NONE);
-#endif
+#include "Setup.h"
 
-#ifdef SH1106_ON
-#ifdef OLED_ON
-#error "Select olny one display!!!"
-#endif
-#define OLED_ON
-#include <U8glib.h>
-U8GLIB_SH1106_128X64 OledDisp(U8G_I2C_OPT_NONE);
-#endif
 
 // setup for SQM TSL2591
 #include "SQM_TSL2591.h"
@@ -69,13 +56,6 @@ boolean Blik      = false;
 String SensorID;
 String BME_MSG;
 String TSL_MSG;
-
-
-// Set Unihedron protokol
-String PROTOCOL_NUMBER = "00000003";
-String MODEL_NUMBER    = "00000003";
-String FEATURE_NUMBER  = "00000003";
-String SERIAL_NUMBER   = "20191005";
 
 
 SQM_TSL2591 sqm = SQM_TSL2591(2591);
@@ -98,6 +78,7 @@ void setup() {
   Serial.println("Start");
 #else
   Serial.begin(115200);
+  //  Serial.setTimeout(1000);
 #endif
 
 
@@ -155,6 +136,7 @@ void setup() {
   } while ( OledDisp.nextPage() );
 
   if (!InitError) {
+
 #ifdef BUZZER_ON
     buzzer(500);
 #endif
@@ -163,7 +145,7 @@ void setup() {
   } else {
     for (int _i = 0; _i < 10; _i++) {
       buzzer(50);
-      buzzer(50) ;
+      delay(50) ;
     }
     while (true);
   }
@@ -193,11 +175,13 @@ void loop() {
 
   }
   else {
-#ifdef BUZZER_ON
-    if (!USBmodeON) {
-      buzzer(200);
-    }
-#endif
+    
+      #ifdef BUZZER_ON
+        if (!USBmodeON) {
+          buzzer(200);
+        }
+      #endif
+    
     USBmodeON = true;
     //        OledDisp.sleepOn();
   }
@@ -270,13 +254,16 @@ void loop() {
       sqm.setTemperature( temp );
 #endif
       sqm.takeReading();
-      char c = Serial.read();
-      if (c == 'i') { // Unihedron init protocol
-        response = String(response + "i," + PROTOCOL_NUMBER + "," + MODEL_NUMBER + "," + FEATURE_NUMBER + "," + SERIAL_NUMBER);
-        new_data = true;
-      }
-      if (c == 'r') { // Unihedron response protocol
-        if (sqm.mpsas < 10.) {
+      String command = Serial.readStringUntil('x');
+
+      if ( command.equals("i")) {  // Unit information request (note lower case "i")
+
+      response = String(response + "i," + PROTOCOL_NUMBER + "," + MODEL_NUMBER + "," + FEATURE_NUMBER + "," + SERIAL_NUMBER);
+        Serial.println(response);
+
+      } else if ( command.equals("r")) { // Reading request
+
+      if (sqm.mpsas < 10.) {
           response = "r,  ";
         } else if (sqm.mpsas < 0) {
           response = "r,";
@@ -292,18 +279,40 @@ void loop() {
         }
         temp_string = String(temp_string + String(temp, 1) + "C");
         response = String(response + String(sqm.mpsas, 2) + "m,0000005915Hz,0000000000c,0000000.000s" + temp_string);
-        new_data = true;
-      }
+        Serial.println(response);
+
+      } else if (command.equals("u")) { // Unaveraged readin request
+      if (sqm.mpsas < 10.) {
+          response = "u,  ";
+        } else if (sqm.mpsas < 0) {
+          response = "u,";
+        } else {
+          response = "u, ";
+        }
+        if (temp < 0.) {
+          temp_string = ",  ";
+        } else if (temp < 10.) {
+          temp_string = ",   ";
+        } else {
+          temp_string = ",  ";
+        }
+        temp_string = String(temp_string + String(temp, 1) + "C");
+        response = String(response + String(sqm.mpsas, 2) + "m,0000005915Hz,0000000000c,0000000.000s" + temp_string);
+        Serial.println(response);
+/* Not now  redy to use 
+      } else if (command.equals("c")) { // Calibration information request
+        response = "c,00000017.60m,0000000.000s, 039.4C,00000008.71m, 039.4C";
+        Serial.println(response);
+*/
 #ifdef EXTENDET_PROTOCOL_ON
-      if (c == 'X') { // My eXtension protocol
+      } else if (command.equals("X") { // My eXtension request for weather information
+        
         response = "X,";
         response = String(response) + String(sqm.mpsas, 2) + "m," + String(int(temp)) + "C," + String(int(hum)) + "%," + String(int(pres / 100)) + "hPa";
-        new_data = true;
-      }
-#endif
-      if (new_data) {
         Serial.println(response);
-        new_data = false;
+#endif
+      } else if (command.equals("L5")) {
+        Serial.println("L5,370");
       }
       OledDisp.firstPage();
       do {
@@ -312,7 +321,6 @@ void loop() {
         OledDisp.setFont(u8g_font_unifont);
         OledDisp.setPrintPos(1, 15);
         //     OledDisp.print("SQM in USB mode");
-        //     OledDisp.print("Mag/Arc-Sec T");
         OledDisp.print("Mag/Arc-Sec T");
         if (Blik) {
 
@@ -338,7 +346,7 @@ void loop() {
         Blik = true;
       }
 
-      delay(100);
+//    delay(100);
     }
   }
 }
