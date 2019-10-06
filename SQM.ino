@@ -204,7 +204,7 @@ void loop() {
       OledDisp.setPrintPos(1, 15);
       OledDisp.print("Mag/Arc-Sec T");
       if (Blik) {
-        OledDisp.print(" \#");
+        OledDisp.print(" #");
       }
       OledDisp.setPrintPos(1, 37);
       OledDisp.print(sqm.mpsas);
@@ -324,7 +324,7 @@ void loop() {
         OledDisp.print("Mag/Arc-Sec T");
         if (Blik) {
 
-          OledDisp.print(" \@");
+          OledDisp.print(" @");
         }
         OledDisp.setPrintPos(1, 37);
         OledDisp.print(sqm.mpsas);
@@ -345,7 +345,6 @@ void loop() {
       } else  {
         Blik = true;
       }
-
 //    delay(100);
     }
   }
