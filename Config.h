@@ -19,6 +19,6 @@
 
 #define DEBUG_OFF   // Debug
 
-#define EXTENDET_PROTOCOL_OFF  // My Extender protocol for USB serial comunication
+#define EXTENDET_PROTOCOL_ON  // My Extender protocol for weather info 
 
 #define STATUS_LED_OFF         // Hardware Version 1.x no status LED
