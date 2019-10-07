@@ -28,7 +28,6 @@ bool LED_OFF = LOW;
   String PROTOCOL_NUMBER = "00000004";
   String MODEL_NUMBER    = "00000006";
   String FEATURE_NUMBER  = "00000023";
-  String SERIAL_NUMBER   = "20191005";
   #define SQM_ON
 #endif
 
@@ -40,13 +39,12 @@ bool LED_OFF = LOW;
   String PROTOCOL_NUMBER = "00000002";
   String MODEL_NUMBER    = "00000003";
   String FEATURE_NUMBER  = "00000001";
-  String SERIAL_NUMBER   = "20191005";
   #define SQM_ON
 #endif
 #ifndef SQM_ON
   #error "Please select one SQM protokol."
 #endif
-
+String SERIAL_NUMBER = Serial_No; 
 
 #ifdef SSD1306_ON
 #define OLED_ON

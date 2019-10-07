@@ -7,9 +7,10 @@
 // Select only one your display
 #define SSD1306_OFF // SSD1306 0.96" 128x64 OLED display 
 #define SH1106_ON   // SH1106  1.3"  128x64 OLED display
+#define OLED_AUTO_CONTRAS_ON  // OLed display auto kontrast
 
-#define SQM_W_ON     //SQM_W protocol 
-#define SQM_LU_OFF   //SQM_LU (SQM-LU-DL) protocol 
+#define SQM_W_OFF     //SQM_W protocol 
+#define SQM_LU_ON   //SQM_LU (SQM-LU-DL) protocol 
 
 //
 #define TEMPER_CALIB_ON         // Temperature calibration
