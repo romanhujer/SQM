@@ -28,6 +28,11 @@ void ReadWeather()
   BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
   BME280::PresUnit presUnit(BME280::PresUnit_Pa);
   bme.read(pres, temp, hum, tempUnit, presUnit);
+
+#ifdef CALIBRATION_ON   
+  temp = temp + TempCalOffset;
+#endif
+  
 }
 
 

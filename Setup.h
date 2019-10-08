@@ -21,29 +21,16 @@ bool LED_OFF = LOW;
 
 
 // Set Unihedron protokol
+// SQM-W ??
+//#define  PROTOCOL_NUMBER  "00000004"
+//#define  MODEL_NUMBER     "00000006"
+//#define  FEATURE_NUMBER   "00000023"
 
-//SQM-W
+// SQM-LU-V SQM-LU-DL-V 
+#define   PROTOCOL_NUMBER "00000002"
+#define   MODEL_NUMBER    "00000003"
+#define   FEATURE_NUMBER  "00000001"
 
-#ifdef SQM_W_ON
-  String PROTOCOL_NUMBER = "00000004";
-  String MODEL_NUMBER    = "00000006";
-  String FEATURE_NUMBER  = "00000023";
-  #define SQM_ON
-#endif
-
-// SQM-LU-V SQM-LU-DL-V
-#ifdef SQM_LU_ON
-  #ifdef SQM_ON
-    #error "Select only one SQM protokol!!!"
-  #endif
-  String PROTOCOL_NUMBER = "00000002";
-  String MODEL_NUMBER    = "00000003";
-  String FEATURE_NUMBER  = "00000001";
-  #define SQM_ON
-#endif
-#ifndef SQM_ON
-  #error "Please select one SQM protokol."
-#endif
 String SERIAL_NUMBER = Serial_No; 
 
 #ifdef SSD1306_ON

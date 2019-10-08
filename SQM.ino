@@ -29,15 +29,13 @@
 
 */
 #define Version "1.0.2"
-#define Serial_No "20191007"
+#define Serial_No "20191008"
 
 #include "Config.h"
 
-
-
 #include <SPI.h>
 #include <Wire.h>
-// #include <avr/wdt.h>
+
 
 #include "Setup.h"
 
@@ -61,8 +59,14 @@ float temp = 0;
 float hum = 0;
 float pres = 0;
 
-
 int counter   = 0;
+
+#ifdef CALIBRATION_ON 
+ float SqmCalOffset = SQM_CAL_OFFSET;    // SQM Calibration offset
+ float TempCalOffset = TEMP_CAL_OFFSET;   // Temperature Calibration offset
+#endif
+
+
 
 SQM_TSL2591 sqm = SQM_TSL2591(2591);
 void readSQM(void);
@@ -87,7 +91,6 @@ void setup() {
   //  Serial.setTimeout(1000);
 #endif
 
-
   if ( bme.begin()) {
     switch (bme.chipModel())
     {
@@ -97,11 +100,11 @@ void setup() {
         break;
       case BME280::ChipModel_BMP280:
         SensorID = "BMP280";
-        BME_MSG = "BMP280 No Humidity";
+        BME_MSG =  "BMP280 no Humid.";
         break;
       default:
         SensorID = "N/A";
-        BME_MSG = "UNKNOWN sensor!";
+        BME_MSG =  "UNKNOWN sensor!";
         InitError = true;
     }
   }
@@ -118,10 +121,12 @@ void setup() {
 #ifdef DEBUG_ON
     sqm.showConfig();
 #endif
-    sqm.setCalibrationOffset(CALIBRATION_OFFSET);
+#ifdef CALIBRATION_ON 
+    sqm.setCalibrationOffset(SqmCalOffset);
+#endif    
   }
   else {
-    TSL_MSG = "SQM not found";
+    TSL_MSG = "SQM notf ound";
     InitError = true;
   }
   // OledDisp.setRot180();
@@ -148,15 +153,9 @@ void setup() {
 
 void loop() {
 
-//  String temp_string;
-//  String sqm_string;
-//  String counter_string;
-  String response;
+ String response;
 
-
-  /// wdt_reset();
-
-  if (digitalRead(ModePin) == 0)   {
+ if (digitalRead(ModePin) == 0)   {
     SerialOK  = false;
 #ifdef BUZZER_ON
     if (USBmodeON) {
@@ -175,7 +174,7 @@ void loop() {
 #endif
 
     USBmodeON = true;
-    //        OledDisp.sleepOn();
+ 
   }
 
   if ( !USBmodeON ) {
@@ -184,9 +183,11 @@ void loop() {
     sqm.setTemperature( temp );
 #endif
     //        OledDisp.sleepOn();
-    sqm.takeReading();
+    
+     sqm.takeReading();
+    
     //        OledDisp.sleepOff();
-    DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp), int(hum), int(pres / 100), '#');
+    DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '#');
     delay(2000);
 
   } else {
@@ -229,9 +230,9 @@ void loop() {
 
       if ( command.equals("i")) {  // Unit information request (note lower case "i")
 
-        response = "i," + PROTOCOL_NUMBER + "," 
-                        + MODEL_NUMBER + ","
-                        + FEATURE_NUMBER + "," 
+        response = "i," + String(PROTOCOL_NUMBER) + "," 
+                        + String(MODEL_NUMBER) + ","
+                        + String(FEATURE_NUMBER) + "," 
                         + SERIAL_NUMBER;
         Serial.println(response);
 
@@ -240,7 +241,7 @@ void loop() {
         response = "r," + sqm_string + "m,"
                         + "0000005915Hz," 
                         + counter_string + "c,"
-                        + "0000005.000s," 
+                        + "000000.200s," 
                         + temp_string +"C";
         Serial.println(response);
 
@@ -248,7 +249,7 @@ void loop() {
         response = "u," + sqm_string + "m,"
                         + "0000005915Hz," 
                         + counter_string + "c,"
-                        + "0000005.000s," 
+                        + "000000.200s," 
                         + temp_string +"C";
         Serial.println(response);
         
@@ -291,7 +292,7 @@ void loop() {
          Serial.println(response);
 #endif
       }
-      DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp), int(hum), int(pres / 100), '@');
+      DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '@');
     }
   }
 }
