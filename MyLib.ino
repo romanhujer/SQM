@@ -16,9 +16,12 @@ void _blk_change_status()
 
 #ifdef BUZZER_ON 
 void buzzer( int _long ) {
-  tone(BuzzerPin, BuzzerTone );
-  delay(_long);
-  noTone(BuzzerPin);
+  for (signed int _i = 0; _i < _long / 2; _i++) {
+       digitalWrite(BuzzerPin,1);
+       delay(1);
+       digitalWrite(BuzzerPin,0);
+       delay(1);
+  }
 }
 #endif
 
@@ -51,7 +54,7 @@ OledDisp.firstPage();
   } while ( OledDisp.nextPage() );
 }
 
-void DisplSqm(  double mpsas, double dmpsas, int temp, int hum , int pres, char blk) 
+void DisplSqm(  double mpsas, double dmpsas, signed char temp, byte hum , int pres, char blk) 
 {
       OledDisp.firstPage();
       do {
@@ -75,9 +78,13 @@ void DisplSqm(  double mpsas, double dmpsas, int temp, int hum , int pres, char 
         OledDisp.setPrintPos(1, 37);
         OledDisp.print(mpsas);
         OledDisp.print(char(0xb1));
-        OledDisp.print(dmpsas);
-        OledDisp.print(" ");
-        OledDisp.print( temp);
+        OledDisp.print(dmpsas);        
+        if (temp <0 ) {       
+          OledDisp.print("-");
+       } else {
+          OledDisp.print(" ");
+        }
+        OledDisp.print( abs(temp) );
         OledDisp.print(char(0xb0));
         OledDisp.print("C");
         OledDisp.setPrintPos(1, 60);
@@ -88,7 +95,6 @@ void DisplSqm(  double mpsas, double dmpsas, int temp, int hum , int pres, char 
       } while ( OledDisp.nextPage());
      _blk_change_status();      
 }
-
 
 void DisplWaitUSB (char blk)
 {

@@ -12,9 +12,6 @@
 
 #define OLED_AUTO_CONTRAS_ON  // OLed display auto kontrast
 
-#define SQM_W_OFF   //SQM_W protocol 
-#define SQM_LU_ON   //SQM_LU (SQM-LU-DL) protocol 
-
 //
 #define CALIBRATION_ON         // Calibration on 
 
@@ -25,7 +22,4 @@
 
 #define BUZZER_ON  // Buzzer
 
-
 #define EXTENDET_PROTOCOL_ON  // My Extender protocol for weather info 
-
-#define STATUS_LED_OFF         // Hardware Version 1.x no status LED
