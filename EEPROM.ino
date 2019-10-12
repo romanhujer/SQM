@@ -4,6 +4,7 @@
 // Copyright (c) 2019 Roman Hujer   http://hujer.net
 //
 
+
 #ifdef CALIBRATION_ON 
 
 // read SQMCalOffset from EEPROM

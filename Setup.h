@@ -11,23 +11,21 @@
   #define BuzzerPin  4      // Buzzer Pin
 #endif
 
-String SERIAL_NUMBER = Serial_No; 
+#ifdef USE_WEATHER_SENSOR_ON
+// I2C mode for BME280 sensor
+// 5V ------ CSB (enables the I2C interface)
+// GND ----- SDO (I2C Address 0x76)
+// 5V ------ SDO (I2C Address 0x77)
+  #define BME_I2C_ADDRESS 0x76  //Default I2C for BME280 sensor 
+#endif 
 
-#ifdef SSD1306_ON
-#define OLED_ON
-#include <U8glib.h>
-#define OLED_ON
-U8GLIB_SSD1306_128X64 OledDisp(U8G_I2C_OPT_NONE);
-#endif
 
-#ifdef SH1106_ON
-#ifdef OLED_ON
-#error "Select only one display!!!"
+#ifdef USE_U8x8_ON
+  #define OLED_FONT  u8x8_font_7x14B_1x2_f
 #endif
-#define OLED_ON
-#include <U8glib.h>
-U8GLIB_SH1106_128X64 OledDisp(U8G_I2C_OPT_NONE);
+#ifdef USE_U8G2_ON
+  #define OLED_FONT  u8g2_font_ncenB08_tr
 #endif
-#ifndef OLED_ON
- #error "Please select one Oled Display."
+#ifdef USE_U8GLIB_ON 
+  #define OLED_FONT  u8g_font_unifont
 #endif
