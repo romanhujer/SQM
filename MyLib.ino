@@ -48,14 +48,22 @@ void ReadWeather()
 void DisplFirstPage( String _tsl, String _bme) {
     OledDisp.setContrast(DEFALUT_CONTRAS);
   #ifdef USE_U8x8_ON
-    if (page != 1) {OledDisp.clear();}
+    if (page != 1) {
+      OledDisp.clear();
+    #ifdef BUZZER_ON
+      buzzer(500);
+    # endif
+    }
     page=1;
     OledDisp.setCursor(0, 0);
     OledDisp.print("SQM Ready V");
     OledDisp.print(Version);
-    OledDisp.setCursor(0, 3);
+    OledDisp.setCursor(0, 2);
+    OledDisp.print("S/N:");
+    OledDisp.print(SERIAL_NUMBER);
+    OledDisp.setCursor(0, 4);
     OledDisp.print(_tsl);
-    OledDisp.setCursor(0, 5);
+    OledDisp.setCursor(0, 6);
     OledDisp.print(_bme);
     //    OledDisp.refreshDisplay();
   #else
@@ -100,29 +108,36 @@ void DisplSqm(  double mpsas, double dmpsas, signed char temp, byte hum , int pr
     OledDisp.setContrast(DEFALUT_CONTRAS);
   #endif
   #ifdef USE_U8x8_ON
-    if (page != 2) {OledDisp.clear();}
+    if (page != 2) {
+      OledDisp.clear();
+    #ifdef BUZZER_ON
+      buzzer(500);
+    # endif     
+    }
     page=2;
     OledDisp.setCursor(0, 0);
-    OledDisp.print("Mag/Arc-Sec T ");
+    OledDisp.print("Mag/Arc-Sec T");
     OledDisp.print(Blik ? blk : ' ' );
     OledDisp.print(" ");
     OledDisp.setCursor(0, 3);
-    if (mpsas < 10) OledDisp.print(" ");
+    if (mpsas < 10) OledDisp.print('0');
     OledDisp.print(mpsas);
     OledDisp.print(char(0xb1));
     OledDisp.print(dmpsas);
-    if (abs(temp) < 10) OledDisp.print(" ");
+    OledDisp.print('M');
+    if (abs(temp) < 10) OledDisp.print(' ');
     OledDisp.print( (temp < 0) ? '-' : ' ' );
     OledDisp.print( temp);
     OledDisp.print(char(0xb0));
-    OledDisp.print("C ");
+    OledDisp.print('C');
     OledDisp.setCursor(0, 5);
     OledDisp.print("H:");
-    if (hum < 10)  { OledDisp.print("  "); } else if  (hum < 100) {OledDisp.print(" ");}
+    if (hum < 10)  { OledDisp.print("  "); } else if  (hum < 100) {OledDisp.print(' ');}
     OledDisp.print( hum);
-    OledDisp.print("%  P:");
-    if (pres < 1000) { OledDisp.print(" ");}
+    OledDisp.print("% P:");
+    if (pres < 1000) { OledDisp.print(' ');}
     OledDisp.print(pres);
+    OledDisp.print("hPa");
   #else
     OledDisp.firstPage();
     do {
@@ -131,7 +146,7 @@ void DisplSqm(  double mpsas, double dmpsas, signed char temp, byte hum , int pr
     #else
       OledDisp.setPrintPos(1, 15);
     #endif
-      OledDisp.print("Mag/Arc-Sec T ");
+      OledDisp.print("Mag/Arc-Sec T");
       OledDisp.print(Blik ? blk : ' ' );
     #ifdef USE_U8G2_ON
       OledDisp.setCursor(1, 37);
@@ -166,7 +181,7 @@ void DisplSqm(  double mpsas, double dmpsas, signed char temp, byte hum , int pr
     Serial.print(" ");  
     Serial.print( temp );
     Serial.print(char(0xb0));
-    Serial.print("C ");
+    Serial.print("C");
     Serial.print("H:");
     Serial.print( hum);
     Serial.print("% P:");
@@ -179,7 +194,12 @@ void DisplWaitUSB (char blk)
   {
     OledDisp.setContrast(DEFALUT_CONTRAS);
   #ifdef USE_U8x8_ON
-    if (page != 3) {OledDisp.clear();}
+    if (page != 3) {
+      OledDisp.clear();
+   #ifdef BUZZER_ON
+      buzzer(500);
+   #endif     
+    }
     page=3;
     OledDisp.setCursor(0, 2);
     OledDisp.print("Wait USB data ");
@@ -201,3 +221,32 @@ void DisplWaitUSB (char blk)
     _blk_change_status();
   }
 #endif
+
+#ifdef CALIBRATION_ON 
+  #ifdef USE_OLED_ON
+void DisplCalData () {
+  if (page != 4) {
+    OledDisp.clear();
+    #ifdef BUZZER_ON
+      buzzer(500);
+    # endif     
+    }
+    page=4;
+    #ifdef USE_U8x8_ON        
+    OledDisp.setCursor(0, 0);
+    OledDisp.print("Calibration data");
+    OledDisp.setCursor(0, 3);
+    OledDisp.print("SQ offset:");
+    OledDisp.print( (SqmCalOffset < 0) ? '-' : ' ' );
+    OledDisp.print(String(abs(SqmCalOffset),2));
+    OledDisp.print("M");
+    OledDisp.setCursor(0, 5);
+    OledDisp.print("TE offset:");
+    OledDisp.print( (TempCalOffset < 0) ? '-' : ' ' );
+    OledDisp.print(String(abs(TempCalOffset),1));
+    OledDisp.print(char(0xb0));
+    OledDisp.print("C");
+    #endif    
+  }   
+  #endif    
+#endif    

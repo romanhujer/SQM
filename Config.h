@@ -25,9 +25,7 @@
   #define DEFALUT_CONTRAS 0
 #endif
 
-
 #define USE_EEPROM_ON  // Use EEPROM for store Calibration vaule default ON
-
 
 #define CALIBRATION_ON          // Calibration default ON 
 #ifdef CALIBRATION_ON 

@@ -29,7 +29,7 @@
 
 */
 #define Version "1.0.4"
-String SERIAL_NUMBER = "20191012";
+String SERIAL_NUMBER = "20191014";
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
@@ -112,7 +112,7 @@ pinMode(ModePin, INPUT_PULLUP);
 #endif
 
 Serial.begin(SERIAL_BAUD);
-//  Serial.setTimeout(1000);
+Serial.setTimeout(1000);
 
 #ifdef USE_WEATHER_SENSOR_ON
   
@@ -169,12 +169,14 @@ Serial.begin(SERIAL_BAUD);
 
   
 #ifdef USE_OLED_ON
-  if ( OledDisp.begin()) {
+ if ( OledDisp.begin()) {
     OledDisp.setFont(OLED_FONT);
  #ifndef USE_U8GLIB_ON 
     OledDisp.setPowerSave(0);
- #endif    
-    DisplFirstPage( TSL_Msg, BME_Msg);
+ #endif   
+  
+   DisplFirstPage( TSL_Msg, BME_Msg);
+
   }
   else {
     InitError = true;
@@ -185,15 +187,8 @@ Serial.begin(SERIAL_BAUD);
    Serial.println(SQM_Msg);
    Serial.println(BME_Msg); 
 #endif 
-    
-  if (!InitError) {
-#ifdef BUZZER_ON
-    buzzer(500);
-#endif
-   delay(1000); // Pause for 1 seconds
-  } 
-  else {
-    for (byte _i = 0; _i < 10; _i++) {
+  if (InitError) {
+     for (byte _i = 0; _i < 20; _i++) {
 #ifdef BUZZER_ON    
       buzzer(50);
 #endif
@@ -204,19 +199,34 @@ Serial.begin(SERIAL_BAUD);
 #endif
      while (true);
    }
-
-} // end of Setup
-
-void loop() {
-
+#ifndef USE_U8x8_ON     
+ #ifdef BUZZER_ON
+    buzzer(500);
+ #endif
+#endif
+  delay(2000); // Pause for 2 seconds
 #ifdef CALIBRATION_ON 
   #ifdef USE_EEPROM_ON
     SqmCalOffset = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
     TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
   #endif
-  sqm.setCalibrationOffset(SqmCalOffset);
+  sqm.setCalibrationOffset(SqmCalOffset); 
+  #ifdef USE_OLED_ON
+     DisplCalData();      
+#ifndef USE_U8x8_ON     
+    #ifdef BUZZER_ON
+      buzzer(500);
+    # endif
 #endif    
+   delay(2000); // Pause for 2 seconds
+  #endif
+#endif
 
+} // end of Setup
+
+//=======================================================================================
+
+void loop() {
   if (digitalRead(ModePin))   {
     SerialOK  = false;
 #ifdef BUZZER_ON
@@ -240,7 +250,7 @@ void loop() {
 #endif
 
 #ifdef USE_SQM_SENSOR_ON
-  #ifdef TEMPER_CALIB_ON
+  #ifdef CALIBRATION_ON 
     #ifdef USE_WEATHER_SENSOR_ON    
       sqm.setTemperature( temp );
     #endif
@@ -252,12 +262,13 @@ void loop() {
 #endif     
     delay(2000);
   } else {
+
 //
 // USB mode 
 // ======================================================
     if (!SerialOK) {
 #ifdef USE_OLED_ON      
-      DisplWaitUSB('@');
+     DisplWaitUSB('@');
 #else       
     Serial.println("Wait Serial data");      
 #endif      
@@ -269,7 +280,7 @@ void loop() {
 #ifdef USE_WEATHER_SENSOR_ON    
       ReadWeather();
 #endif
-#ifdef TEMPER_CALIB_ON
+#ifdef CALIBRATION_ON
   #ifdef USE_WEATHER_SENSOR_ON    
       sqm.setTemperature( temp );
   #endif      
@@ -310,15 +321,15 @@ void loop() {
       } else if ( command.equals("r")) { // Reading request
   
         response = "r," + sqm_string 
-                        + "m,0000005915Hz," 
+                        + "m,0000002292Hz," 
                         + counter_string 
-                        + "c,000000.200s," 
+                        + "c,000005.000s," 
                         + temp_string +"C";
         Serial.println(response);
 
       } else if (command.equals("u")) { // Unaveraged reading request
         response = "u," + sqm_string 
-                        + "m,0000005915Hz," 
+                        + "m,0000002292Hz," 
                         + counter_string 
                         + "c,000000.200s," 
                         + temp_string +"C";
@@ -391,7 +402,15 @@ void loop() {
         }
 #ifdef USE_OLED_ON        
         DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '@');
-#endif        
+#endif 
+#ifdef CALIBRATION_ON 
+    #ifdef USE_EEPROM_ON
+      SqmCalOffset = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
+      TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
+  #endif
+  sqm.setCalibrationOffset(SqmCalOffset);
+#endif    
+       
     }
   }
 }
