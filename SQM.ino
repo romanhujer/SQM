@@ -97,7 +97,7 @@ float temp = 0;
 float hum = 0;
 float pres = 0;
 uint16_t counter = 0;
-
+byte page = 0;
 String BME_Msg;
 String TSL_Msg;
 

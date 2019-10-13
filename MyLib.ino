@@ -48,7 +48,8 @@ void ReadWeather()
 void DisplFirstPage( String _tsl, String _bme) {
     OledDisp.setContrast(DEFALUT_CONTRAS);
   #ifdef USE_U8x8_ON
-    OledDisp.clear();
+    if (page != 1) {OledDisp.clear();}
+    page=1;
     OledDisp.setCursor(0, 0);
     OledDisp.print("SQM Ready V");
     OledDisp.print(Version);
@@ -99,7 +100,8 @@ void DisplSqm(  double mpsas, double dmpsas, signed char temp, byte hum , int pr
     OledDisp.setContrast(DEFALUT_CONTRAS);
   #endif
   #ifdef USE_U8x8_ON
-//    OledDisp.clear();
+    if (page != 2) {OledDisp.clear();}
+    page=2;
     OledDisp.setCursor(0, 0);
     OledDisp.print("Mag/Arc-Sec T ");
     OledDisp.print(Blik ? blk : ' ' );
@@ -177,9 +179,12 @@ void DisplWaitUSB (char blk)
   {
     OledDisp.setContrast(DEFALUT_CONTRAS);
   #ifdef USE_U8x8_ON
+    if (page != 3) {OledDisp.clear();}
+    page=3;
     OledDisp.setCursor(0, 2);
     OledDisp.print("Wait USB data ");
     OledDisp.print(Blik ? blk : ' ' );
+  //  OledDisp.refreshDisplay();
   #else
     OledDisp.firstPage();
     do {
