@@ -377,12 +377,12 @@ void loop() {
          Serial.println(response);
   #ifdef  USE_EEPROM_ON       
         } else if ( command.equals("zd") ) {
-          response = Serial.readStringUntil('e');
+          response = Serial.readStringUntil('\r');
           SqmCalOffset=response.toFloat();        
           WriteEESqmCalOffset(SqmCalOffset);          
           Serial.println("zd,"+String(SqmCalOffset,2));
         } else if ( command.equals("zt") ) {
-          response = Serial.readStringUntil('e');
+          response = Serial.readStringUntil('\r');
           TempCalOffset=response.toFloat();          
           WriteEETempCalOffset(TempCalOffset);          
           Serial.println("zt,"+String(TempCalOffset,1));
