@@ -217,7 +217,7 @@ void loop() {
   sqm.setCalibrationOffset(SqmCalOffset);
 #endif    
 
-  if (digitalRead(ModePin) == 0)   {
+  if (digitalRead(ModePin))   {
     SerialOK  = false;
 #ifdef BUZZER_ON
     if (USBmodeON) {
@@ -265,7 +265,7 @@ void loop() {
       while (Serial.available() > 0) {
        String response;  
        SerialOK  = true;
-      if (!digitalRead(ModePin))  break ;  // check end USB mode
+      if (digitalRead(ModePin))  break ;  // check end USB mode
 #ifdef USE_WEATHER_SENSOR_ON    
       ReadWeather();
 #endif
