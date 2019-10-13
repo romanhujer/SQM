@@ -12,7 +12,7 @@ Arduino compatible Sky Quality Meter using the TSL2591
 
 ## Features
 
-### USB Control mode use dervivated Unihedron serial protokol
+### USB Control mode use derived Unihedron serial protokol
 
 #### Box info (Original Unihedron protokol)
 * Request: ix 
@@ -21,7 +21,9 @@ Arduino compatible Sky Quality Meter using the TSL2591
 #### Read data  (Original Unihedron protokol)
 * Request: rx  
 * Response: r, 10.28m,0000005915Hz,0000000002c,000000.200s, 026.2C
-or 
+
+or
+ 
 * Request: ux  
 * Response: u, 10.33m,0000005915Hz,0000000004c,000000.200s, 026.4C
 
