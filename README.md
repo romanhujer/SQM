@@ -53,5 +53,5 @@ Negative value:
 
 Positive value:  
 * Request:  ztx0.5<enter>
-* Response: zt, 0.8 
+* Response: zt, 0.5 
 
