@@ -28,8 +28,8 @@
   Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 
 */
-#define Version "1.0.4"
-String SERIAL_NUMBER = "20191014";
+#define Version "1.0.5"
+String SERIAL_NUMBER = "20191015";
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
@@ -103,16 +103,16 @@ String TSL_Msg;
 
 void setup() {
 
-Wire.begin(); 
+  Wire.begin(); 
 
-pinMode(ModePin, INPUT_PULLUP);
+  pinMode(ModePin, INPUT_PULLUP);
 
 #ifdef BUZZER_ON
   pinMode(BuzzerPin, OUTPUT);
 #endif
 
-Serial.begin(SERIAL_BAUD);
-Serial.setTimeout(1000);
+  Serial.begin(SERIAL_BAUD);
+  Serial.setTimeout(1000);
 
 #ifdef USE_WEATHER_SENSOR_ON
   
@@ -174,7 +174,7 @@ Serial.setTimeout(1000);
  #ifndef USE_U8GLIB_ON 
     OledDisp.setPowerSave(0);
  #endif   
-  
+ 
    DisplFirstPage( TSL_Msg, BME_Msg);
 
   }
@@ -204,7 +204,7 @@ Serial.setTimeout(1000);
     buzzer(500);
  #endif
 #endif
-  delay(2000); // Pause for 2 seconds
+  delay(1000); // Pause for 2 seconds
 #ifdef CALIBRATION_ON 
   #ifdef USE_EEPROM_ON
     SqmCalOffset = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
@@ -218,7 +218,7 @@ Serial.setTimeout(1000);
       buzzer(500);
     # endif
 #endif    
-   delay(2000); // Pause for 2 seconds
+   delay(1000); // Pause for 2 seconds
   #endif
 #endif
 
@@ -227,6 +227,7 @@ Serial.setTimeout(1000);
 //=======================================================================================
 
 void loop() {
+  String response;  
   if (digitalRead(ModePin))   {
     SerialOK  = false;
 #ifdef BUZZER_ON
@@ -261,21 +262,21 @@ void loop() {
     DisplSqm( 0., 0., int(temp+0.5), int(hum), int(pres / 100), '#');
 #endif     
     delay(2000);
-  } else {
-
+  }
+    else {
 //
 // USB mode 
 // ======================================================
     if (!SerialOK) {
 #ifdef USE_OLED_ON      
      DisplWaitUSB('@');
+     delay(50);
 #else       
     Serial.println("Wait Serial data");      
 #endif      
     }
-      while (Serial.available() > 0) {
-       String response;  
-       SerialOK  = true;
+     while ( Serial.available()) {   
+      SerialOK  = true;
       if (digitalRead(ModePin))  break ;  // check end USB mode
 #ifdef USE_WEATHER_SENSOR_ON    
       ReadWeather();
@@ -287,51 +288,50 @@ void loop() {
 #endif
       String counter_string = String(counter++);
       while ( counter_string.length() < 10) {
-        counter_string = "0" + counter_string;
+        counter_string = '0' + counter_string;
       }
-      char _sign, _tsig;
+      char _sign;
 #ifdef USE_SQM_SENSOR_ON
       sqm.takeReading();
       String sqm_string = String(abs(sqm.mpsas), 2);
       while ( sqm_string.length() < 5) {
-        sqm_string = "0" + sqm_string;
+        sqm_string = '0' + sqm_string;
       }
-      _sign = ( sqm.mpsas < 0. ) ? '-' : ' ';
+      _sign = ( sqm.mpsas < 0 ) ? '-' : ' ';
       sqm_string = _sign + sqm_string;
 #else 
       String sqm_string = " 00.00";
 #endif
 #ifdef USE_WEATHER_SENSOR_ON
-      String temp_string = String(abs(temp), 1);
+      String temp_string = String( abs(temp), 1);
       while ( temp_string.length() < 5) {
-        temp_string = "0" + temp_string;
+        temp_string = '0' + temp_string;
       }
-      _tsig = ( temp < 0. ) ? '-' : ' ';
-      temp_string = _tsig + temp_string;
+      _sign = ( temp < 0 ) ? '-' : ' ';
+      temp_string = _sign + temp_string;
 #else
       String temp_string = " 000.0";
 #endif      
       String command = Serial.readStringUntil('x');
 
       if ( command.equals("i")) {  // Unit information request (note lower case "i")
-        response = "i,00000002,00000003,00000001,"
-                    + SERIAL_NUMBER;
+          response = "i,00000002,00000003,00000001,"
+                     + SERIAL_NUMBER;
         Serial.println(response);
 
       } else if ( command.equals("r")) { // Reading request
-  
-        response = "r," + sqm_string 
-                        + "m,0000002292Hz," 
+         response = "r," + sqm_string 
+                        + "m,0000002591Hz," 
                         + counter_string 
-                        + "c,000005.000s," 
+                        + "c,0000000.200s," 
                         + temp_string +"C";
         Serial.println(response);
 
       } else if (command.equals("u")) { // Unaveraged reading request
         response = "u," + sqm_string 
-                        + "m,0000002292Hz," 
+                        + "m,0000002591Hz," 
                         + counter_string 
-                        + "c,000000.200s," 
+                        + "c,0000000.200s," 
                         + temp_string +"C";
         Serial.println(response);     
      
@@ -340,11 +340,11 @@ void loop() {
   #ifdef USE_SQM_SENSOR_ON
         String ir_string = String(sqm.ir);
         while ( ir_string.length() < 5) { 
-        ir_string = "0" + ir_string;
+        ir_string = '0' + ir_string;
         }
         String vis_string = String(sqm.vis);
         while ( vis_string.length() < 5) { 
-          vis_string = "0" + vis_string;
+          vis_string = '0' + vis_string;
         }
    #else
          String ir_string =  "00000";
@@ -353,15 +353,15 @@ void loop() {
    #ifdef USE_WEATHER_SENSOR_ON        
         String hum_string = String(int(hum));
         while ( hum_string.length() < 3) { 
-          hum_string = "0" + hum_string;
+          hum_string = '0' + hum_string;
         }
         String pres_string = String(int(pres / 100));
         while ( pres_string.length() < 4) { 
-         pres_string = "0" + pres_string;
+         pres_string = '0' + pres_string;
        }
    #else
         String hum_string = "000";
-        String hum_string = "0000";
+        String pres_string = "0000";
    #endif
         response = "w," + sqm_string + "m,"
    #ifdef USE_SQM_SENSOR_ON        
@@ -371,32 +371,36 @@ void loop() {
    #endif                          
                           + ir_string + "i,"
                           + vis_string + "v,"                          
-                          + temp_string + "C,"
                           + hum_string + "h,"
-                          + pres_string + "p";
+                          + pres_string + "p,"
+                          + temp_string + "C";
         Serial.println(response);
 #endif
 #ifdef CALIBRATION_ON 
           } else if (command.equals("c")) { // read Calibration information request
-
-          _sign = ( SqmCalOffset  < 0. ) ? '-' : ' ';
-          _tsig = ( TempCalOffset < 0. ) ? '-' : ' ';
-
-          response= "c," + String(_sign) + String(abs(SqmCalOffset),2)  + "d," 
-                         + String(_tsig) + String(abs(TempCalOffset),1) + "t";
+            String SqmCalOffset_string = String(SqmCalOffset,2);
+            if( SqmCalOffset >= 0 ) SqmCalOffset_string = ' ' + SqmCalOffset_string;
+            String TempCalOffset_string = String(TempCalOffset,1);
+            if ( TempCalOffset >= 0 ) TempCalOffset_string = ' ' +TempCalOffset_string;
+            response= "c,"+ SqmCalOffset_string  + "dm," 
+                          + TempCalOffset_string + "dt";
                                        
          Serial.println(response);
   #ifdef  USE_EEPROM_ON       
-        } else if ( command.equals("zd") ) {
+        } else if ( command.equals("z") ) {
           response = Serial.readStringUntil('\r');
-          SqmCalOffset=response.toFloat();        
-          WriteEESqmCalOffset(SqmCalOffset);          
-          Serial.println("zd,"+String(SqmCalOffset,2));
-        } else if ( command.equals("zt") ) {
-          response = Serial.readStringUntil('\r');
-          TempCalOffset=response.toFloat();          
-          WriteEETempCalOffset(TempCalOffset);          
-          Serial.println("zt,"+String(TempCalOffset,1));
+          if ( response[0] == 'm' && response[1] == ',' ) {
+            response = response.substring(2); 
+            SqmCalOffset=response.toFloat();        
+            WriteEESqmCalOffset(SqmCalOffset);          
+            Serial.println("zdm,"+String(SqmCalOffset,2));
+          } 
+          else if ( response[0] == 't' && response[1] == ',' ) {
+            response = response.substring(2);
+            TempCalOffset=response.toFloat();          
+            WriteEETempCalOffset(TempCalOffset);          
+            Serial.println("zdt,"+String(TempCalOffset,1));
+          } else Serial.println("ERR:" + command +'x'+ response );
   #endif                   
 #endif            
         }
@@ -405,12 +409,12 @@ void loop() {
 #endif 
 #ifdef CALIBRATION_ON 
     #ifdef USE_EEPROM_ON
-      SqmCalOffset = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
+      SqmCalOffset  = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
       TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
   #endif
   sqm.setCalibrationOffset(SqmCalOffset);
 #endif    
        
-    }
-  }
-}
+    } // end of while ( Serial.available() )
+  }  // end of if (digitalRead(ModePin)) 
+} // end of loop()

@@ -45,13 +45,13 @@ void ReadWeather()
 
 #ifdef USE_OLED_ON
 
-void DisplFirstPage( String _tsl, String _bme) {
+void DisplFirstPage( String &_tsl, String &_bme) {
     OledDisp.setContrast(DEFALUT_CONTRAS);
   #ifdef USE_U8x8_ON
     if (page != 1) {
       OledDisp.clear();
     #ifdef BUZZER_ON
-      buzzer(500);
+      buzzer(200);
     # endif
     }
     page=1;
@@ -93,13 +93,13 @@ void DisplFirstPage( String _tsl, String _bme) {
 }
 #endif
 
-void DisplSqm(  double mpsas, double dmpsas, signed char temp, byte hum , int pres, char blk) {
+void DisplSqm(  double mpsas, double dmpsas, int temp, byte hum , int pres, char blk) {
   
 #ifdef USE_OLED_ON
   #ifdef OLED_AUTO_CONTRAS_ON
-    if ( mpsas < 10.) {
+    if ( mpsas < 10) {
       OledDisp.setContrast(150);
-    } else if ( mpsas < 15.) {
+    } else if ( mpsas < 15) {
       OledDisp.setContrast(50);
     } else {
       OledDisp.setContrast(0);
@@ -111,23 +111,23 @@ void DisplSqm(  double mpsas, double dmpsas, signed char temp, byte hum , int pr
     if (page != 2) {
       OledDisp.clear();
     #ifdef BUZZER_ON
-      buzzer(500);
+      buzzer(200);
     # endif     
     }
     page=2;
     OledDisp.setCursor(0, 0);
     OledDisp.print("Mag/Arc-Sec T");
     OledDisp.print(Blik ? blk : ' ' );
-    OledDisp.print(" ");
+    OledDisp.print(' ');
     OledDisp.setCursor(0, 3);
     if (mpsas < 10) OledDisp.print('0');
     OledDisp.print(mpsas);
     OledDisp.print(char(0xb1));
     OledDisp.print(dmpsas);
     OledDisp.print('M');
-    if (abs(temp) < 10) OledDisp.print(' ');
-    OledDisp.print( (temp < 0) ? '-' : ' ' );
-    OledDisp.print( temp);
+    if ( abs( temp ) < 10) OledDisp.print(' ');
+    if ( temp >= 0 )  OledDisp.print(' ');
+    OledDisp.print( temp );
     OledDisp.print(char(0xb0));
     OledDisp.print('C');
     OledDisp.setCursor(0, 5);
@@ -156,7 +156,7 @@ void DisplSqm(  double mpsas, double dmpsas, signed char temp, byte hum , int pr
       OledDisp.print(mpsas);
       OledDisp.print(char(0xb1));
       OledDisp.print(dmpsas);
-      OledDisp.print( (temp < 0) ? '-' : ' ' );
+      OledDisp.print( (temp < 0) ? '-' : '+' );
       OledDisp.print( abs(temp) );
       OledDisp.print(char(0xb0));
       OledDisp.print("C");
@@ -197,7 +197,7 @@ void DisplWaitUSB (char blk)
     if (page != 3) {
       OledDisp.clear();
    #ifdef BUZZER_ON
-      buzzer(500);
+      buzzer(200);
    #endif     
     }
     page=3;
@@ -228,22 +228,23 @@ void DisplCalData () {
   if (page != 4) {
     OledDisp.clear();
     #ifdef BUZZER_ON
-      buzzer(500);
+      buzzer(200);
     # endif     
-    }
-    page=4;
+  }
+  
+  page=4;
     #ifdef USE_U8x8_ON        
     OledDisp.setCursor(0, 0);
     OledDisp.print("Calibration data");
     OledDisp.setCursor(0, 3);
     OledDisp.print("SQ offset:");
-    OledDisp.print( (SqmCalOffset < 0) ? '-' : ' ' );
-    OledDisp.print(String(abs(SqmCalOffset),2));
+    if (SqmCalOffset >= 0)  OledDisp.print(' ');
+    OledDisp.print( String(SqmCalOffset,2));
     OledDisp.print("M");
     OledDisp.setCursor(0, 5);
     OledDisp.print("TE offset:");
-    OledDisp.print( (TempCalOffset < 0) ? '-' : ' ' );
-    OledDisp.print(String(abs(TempCalOffset),1));
+    if (TempCalOffset >= 0) OledDisp.print(' ');
+    OledDisp.print(String(TempCalOffset,1));
     OledDisp.print(char(0xb0));
     OledDisp.print("C");
     #endif    

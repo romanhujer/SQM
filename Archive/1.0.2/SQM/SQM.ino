@@ -156,7 +156,7 @@ void loop() {
 
   /// wdt_reset();
 
-  if (digitalRead(ModePin) == 0)   {
+  if (digitalRead(ModePin))   {
     SerialOK  = false;
 #ifdef BUZZER_ON
     if (USBmodeON) {
@@ -196,7 +196,7 @@ void loop() {
     }
     while (Serial.available() > 0) {
       SerialOK  = true;
-      if (digitalRead(ModePin) == 0)  break ;  // check end USB mode
+      if (digitalRead(ModePin))  break ;  // check end USB mode
       ReadWeather();
 #ifdef TEMPER_CALIB_ON
       sqm.setTemperature( temp );

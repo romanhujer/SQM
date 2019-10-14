@@ -166,7 +166,7 @@ void loop() {
 
   /// wdt_reset();
 
-  if (digitalRead(ModePin) == 0)   {
+  if (digitalRead(ModePin) )   {
     SerialOK  = false;
 #ifdef BUZZER_ON
     if (USBmodeON) {
@@ -253,7 +253,7 @@ void loop() {
     }
     while (Serial.available() > 0) {
       SerialOK  = true;
-      if (digitalRead(ModePin) == 0)  break ;  // check end USB mode
+      if (digitalRead(ModePin) )  break ;  // check end USB mode
 
       BME280::TempUnit tempUnit(BME280::TempUnit_Celsius);
       BME280::PresUnit presUnit(BME280::PresUnit_Pa);

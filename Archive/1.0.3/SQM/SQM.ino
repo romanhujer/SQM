@@ -143,7 +143,7 @@ String response;
    TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
    sqm.setCalibrationOffset(SqmCalOffset);
 #endif    
-  if (digitalRead(ModePin) == 0)   {
+  if (digitalRead(ModePin))   {
     SerialOK  = false;
 #ifdef BUZZER_ON
     if (USBmodeON) {
@@ -176,7 +176,7 @@ String response;
     }
     while (Serial.available() > 0) {
       SerialOK  = true;
-      if (!digitalRead(ModePin))  break ;  // check end USB mode
+      if (digitalRead(ModePin))  break ;  // check end USB mode
       ReadWeather();
 #ifdef TEMPER_CALIB_ON
       sqm.setTemperature( temp );

@@ -7,11 +7,19 @@
 
 #ifdef CALIBRATION_ON 
 
+// EEPROM data position 
+#define EEPROM_SQM_CAL_INDEX_C 1
+#define EEPROM_SQM_CAL_INDEX_F 2
+#define EEPROM_TEMP_CAL_INDEX_C 6
+#define EEPROM_TEMP_CAL_INDEX_F 7 
+
+
+
 // read SQMCalOffset from EEPROM
 float ReadEESqmCalOffset(){
   float f;
-  if ( EEPROM.read(1) == 'd') {
-    f = EEPROM_readFloat(2);
+  if ( EEPROM.read(EEPROM_SQM_CAL_INDEX_C) == 'm') {
+    f = EEPROM_readFloat(EEPROM_SQM_CAL_INDEX_F);
   }
   else {
    f = SQM_CAL_OFFSET;  
@@ -22,8 +30,8 @@ float ReadEESqmCalOffset(){
 // read Temperature Calibration offset from EEPROM
 float ReadEETempCalOffset(){
   float f;
-    if ( EEPROM.read(6) == 't' ) {
-    f = EEPROM_readFloat(7);
+    if ( EEPROM.read(EEPROM_TEMP_CAL_INDEX_C) == 't' ) {
+    f = EEPROM_readFloat(EEPROM_TEMP_CAL_INDEX_F);
   }
   else {
     f = TEMP_CAL_OFFSET;   
@@ -31,13 +39,13 @@ float ReadEETempCalOffset(){
   return f;
 }
 void WriteEESqmCalOffset( float f){
-   EEPROM.write(1,'d');
-   EEPROM_writeFloat(2, f);
+   EEPROM.write(EEPROM_SQM_CAL_INDEX_C,'m');
+   EEPROM_writeFloat(EEPROM_SQM_CAL_INDEX_F, f);
 }
 
 void WriteEETempCalOffset( float f) {
-   EEPROM.write(6,'t');
-   EEPROM_writeFloat(7, f);
+   EEPROM.write(EEPROM_TEMP_CAL_INDEX_C,'t');
+   EEPROM_writeFloat(EEPROM_TEMP_CAL_INDEX_F, f);
 }
 
 // write 4 byte variable into EEPROM at position i (4 bytes)

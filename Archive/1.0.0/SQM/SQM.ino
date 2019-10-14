@@ -129,7 +129,7 @@ void loop() {
 
   
 
-       if (digitalRead(DisplayOnPin) == 0)   {
+       if (digitalRead(DisplayOnPin))   {
         if (DisplayON){ 
             DisplayON = false; 
           } else { 
