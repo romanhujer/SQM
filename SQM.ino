@@ -227,7 +227,8 @@ void setup() {
 //=======================================================================================
 
 void loop() {
-  String response;  
+  String response;
+  
   if (digitalRead(ModePin))   {
     SerialOK  = false;
 #ifdef BUZZER_ON
@@ -291,6 +292,7 @@ void loop() {
         counter_string = '0' + counter_string;
       }
       char _sign;
+      float _f;   
 #ifdef USE_SQM_SENSOR_ON
       sqm.takeReading();
       String sqm_string = String(abs(sqm.mpsas), 2);
@@ -311,7 +313,8 @@ void loop() {
       temp_string = _sign + temp_string;
 #else
       String temp_string = " 000.0";
-#endif      
+#endif
+   
       String command = Serial.readStringUntil('x');
 
       if ( command.equals("i")) {  // Unit information request (note lower case "i")
@@ -334,7 +337,7 @@ void loop() {
                         + "c,0000000.200s," 
                         + temp_string +"C";
         Serial.println(response);     
-     
+
 #ifdef EXTENDET_PROTOCOL_ON
       } else if (command.equals("w")) { // My extension request for weather information
   #ifdef USE_SQM_SENSOR_ON
@@ -346,9 +349,15 @@ void loop() {
         while ( vis_string.length() < 5) { 
           vis_string = '0' + vis_string;
         }
+        String f_string = String(sqm.full);
+        while ( f_string.length() < 5) { 
+          f_string = '0' + f_string;
+        }
+        
    #else
          String ir_string =  "00000";
          String vis_string = "00000";
+         String f_string   = "00000";
    #endif
    #ifdef USE_WEATHER_SENSOR_ON        
         String hum_string = String(int(hum));
@@ -369,6 +378,7 @@ void loop() {
    #else     
                           + "0.00e,"
    #endif                          
+                          + f_string + "f,"
                           + ir_string + "i,"
                           + vis_string + "v,"                          
                           + hum_string + "h,"
@@ -378,29 +388,62 @@ void loop() {
 #endif
 #ifdef CALIBRATION_ON 
           } else if (command.equals("c")) { // read Calibration information request
-            String SqmCalOffset_string = String(SqmCalOffset,2);
-            if( SqmCalOffset >= 0 ) SqmCalOffset_string = ' ' + SqmCalOffset_string;
-            String TempCalOffset_string = String(TempCalOffset,1);
-            if ( TempCalOffset >= 0 ) TempCalOffset_string = ' ' +TempCalOffset_string;
-            response= "c,"+ SqmCalOffset_string  + "dm," 
-                          + TempCalOffset_string + "dt";
-                                       
-         Serial.println(response);
+              sqm_string = String(abs(SqmCalOffset), 2);
+              while ( sqm_string.length() < 9) {
+                 sqm_string = '0' + sqm_string;
+              }
+              _sign = ( SqmCalOffset < 0 ) ? '-' : '0';
+              sqm_string = _sign + sqm_string;
+              _f= ( TempCalOffset < 0 )? -TempCalOffset : TempCalOffset;  
+              temp_string = String( _f, 1);
+              while ( temp_string.length() < 5) {
+                temp_string = '0' + temp_string;
+              }
+              _sign = ( TempCalOffset < 0 ) ? '-' : ' ';
+              temp_string = _sign + temp_string;
+
+              response= "c," + sqm_string  + "m," 
+                             + "0000000.000s,"
+                             + temp_string + "C,"
+                             + sqm_string  + "m,"
+                             + temp_string + "C"; 
+             Serial.println(response);
   #ifdef  USE_EEPROM_ON       
-        } else if ( command.equals("z") ) {
-          response = Serial.readStringUntil('\r');
-          if ( response[0] == 'm' && response[1] == ',' ) {
-            response = response.substring(2); 
-            SqmCalOffset=response.toFloat();        
-            WriteEESqmCalOffset(SqmCalOffset);          
-            Serial.println("zdm,"+String(SqmCalOffset,2));
-          } 
-          else if ( response[0] == 't' && response[1] == ',' ) {
-            response = response.substring(2);
-            TempCalOffset=response.toFloat();          
-            WriteEETempCalOffset(TempCalOffset);          
-            Serial.println("zdt,"+String(TempCalOffset,1));
-          } else Serial.println("ERR:" + command +'x'+ response );
+        }   else if ( command[0] == 'z' ) {
+              response = command.substring(1,4);
+           if ( response.equals("cal")) { 
+              char _x = command[4];                       
+              if (  _x == '5') {    // Calibration Light offest 
+                response = command.substring(5); 
+                SqmCalOffset=response.toFloat();        
+                WriteEESqmCalOffset(SqmCalOffset);          
+                sqm_string = String(abs(SqmCalOffset), 2);
+                while ( sqm_string.length() < 9) {
+                   sqm_string = '0' + sqm_string;
+                }
+                _sign = ( SqmCalOffset < 0 ) ? '-' : '0';
+                sqm_string = _sign + sqm_string;
+                Serial.println("z,5,"+ sqm_string + 'm');
+              } 
+              else if ( (_x == '6') || (_x == '8') ) {  // Calibration Temperature
+                
+                response = command.substring(5); 
+                TempCalOffset=response.toFloat();          
+                WriteEETempCalOffset(TempCalOffset); 
+                _f= ( TempCalOffset < 0 )? -TempCalOffset : TempCalOffset;  
+                temp_string = String( _f, 1);
+                while ( temp_string.length() < 5) {
+                  temp_string = '0' + temp_string;
+                }
+                _sign = ( TempCalOffset < 0 ) ? '-' : ' ';
+                temp_string = _sign + temp_string;
+                Serial.println("z," + String(_x )+ ',' + temp_string + 'C');
+               } 
+               else if ( _x == '7') { // Calibration Light offest                
+                   Serial.println("z," + String(_x) + ',' + command.substring(5) + 's');                
+               }
+        
+          } else Serial.println("ERR:" + command );
   #endif                   
 #endif            
         }
