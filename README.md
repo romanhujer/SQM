@@ -35,23 +35,23 @@ or
 #### Read calibratin data  (is my modication)
 
 * Request: cx  
-* Response: c, 0.01d,-0.5t
+* Response: c,0000000002c 10.28m,0000002591Hz,0000000002c,000005.000s, 026.2C
  
 #### Write SQM calibration offset to EEPROM (is my modication)
 Negative value: 
-* Request:  zdx-0.05<enter>
-* Response: zd,-0.05
+* Request:  zcal5-0.05x
+* Response: z,5,-000000.05m
 
 Positive value:  
-* Request:  zdx0.01<enter>
-* Response: zd, 0.01 
+* Request:  zcal50.01x
+* Response: z,5,0000000.01m 
 
 #### Write Temperature offset to EEPROM (is my modication)
 Negative value: 
-* Request:  ztx-0.8<enter>
-* Response: zt,-0.8
+* Request:  zcal6-0.5x
+* Response: z,5,-00.5C 
 
 Positive value:  
-* Request:  ztx0.5<enter>
-* Response: zt, 0.5 
+* Request:  zcal600.5x
+* Response: z,5, 00.5C 
 
