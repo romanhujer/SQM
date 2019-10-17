@@ -4,15 +4,15 @@
 // Copyright (c) 2019 Roman Hujer   http://hujer.net
 //
 
-
-#ifdef CALIBRATION_ON 
-
 // EEPROM data position 
-#define EEPROM_SQM_CAL_INDEX_C 1
-#define EEPROM_SQM_CAL_INDEX_F 2
-#define EEPROM_TEMP_CAL_INDEX_C 6
-#define EEPROM_TEMP_CAL_INDEX_F 7 
-
+#define EEPROM_SQM_CAL_INDEX_C       1
+#define EEPROM_SQM_CAL_INDEX_F       2
+#define EEPROM_TEMP_CAL_INDEX_C      6
+#define EEPROM_TEMP_CAL_INDEX_F      7 
+#define EEPROM_AUTO_TEMP_INDEX_C     10
+#define EEPROM_AUTO_CONTRAS_INDEX_C  11
+#define EEPROM_CONTRAS_INDEX_C       12
+#define EEPROM_CONTRAS_INDEX_B       13
 
 
 // read SQMCalOffset from EEPROM
@@ -27,7 +27,14 @@ float ReadEESqmCalOffset(){
   return f;
 }
 
-// read Temperature Calibration offset from EEPROM
+// Write SQMCalOffset to EEPROM
+void WriteEESqmCalOffset( float f){
+   EEPROM.write(EEPROM_SQM_CAL_INDEX_C,'m');
+   EEPROM_writeFloat(EEPROM_SQM_CAL_INDEX_F, f);
+}
+
+
+// Read Temperature Calibration offset from EEPROM
 float ReadEETempCalOffset(){
   float f;
     if ( EEPROM.read(EEPROM_TEMP_CAL_INDEX_C) == 't' ) {
@@ -38,15 +45,63 @@ float ReadEETempCalOffset(){
   }
   return f;
 }
-void WriteEESqmCalOffset( float f){
-   EEPROM.write(EEPROM_SQM_CAL_INDEX_C,'m');
-   EEPROM_writeFloat(EEPROM_SQM_CAL_INDEX_F, f);
-}
 
+// Write Temperature Calibration offset to EEPROM
 void WriteEETempCalOffset( float f) {
    EEPROM.write(EEPROM_TEMP_CAL_INDEX_C,'t');
    EEPROM_writeFloat(EEPROM_TEMP_CAL_INDEX_F, f);
 }
+
+// Read AutoContras
+boolean ReadEEAutoContras() {
+  if ( EEPROM.read(EEPROM_AUTO_CONTRAS_INDEX_C) == 'N' )  
+     return false;
+  else 
+     return true;
+}
+
+// Write AutoContras
+void WriteEEAutoContras( boolean _b ) {
+  if ( _b )
+    EEPROM.write(EEPROM_AUTO_CONTRAS_INDEX_C,'Y');
+  else 
+    EEPROM.write(EEPROM_AUTO_CONTRAS_INDEX_C,'N');
+}
+
+// Read AutoTemperature Calibratiosn
+boolean ReadEEAutoTempCal() {
+  if ( EEPROM.read(EEPROM_AUTO_TEMP_INDEX_C) == 'N' )  
+     return false;
+  else 
+     return true;
+}
+
+// Write 
+void WriteEEAutoTempCal( boolean _b ) {
+  if ( _b )
+    EEPROM.write(EEPROM_AUTO_TEMP_INDEX_C,'Y');
+  else 
+    EEPROM.write(EEPROM_AUTO_TEMP_INDEX_C,'N');
+}
+
+// Read Display contras from EEPROM
+uint8_t ReadEEcontras(){
+   uint8_t _f;
+  if ( EEPROM.read(EEPROM_CONTRAS_INDEX_C) == 'C') {
+    _f = EEPROM.read(EEPROM_CONTRAS_INDEX_B);
+  }
+  else {
+   _f = DEFALUT_CONTRAS;  
+  } 
+  return _f;
+}
+
+// Write Display Contras to EEPROM
+void WriteEEScontras( uint8_t _f){
+   EEPROM.write(EEPROM_CONTRAS_INDEX_C,'C');
+   EEPROM.write(EEPROM_CONTRAS_INDEX_B, _f);
+}
+
 
 // write 4 byte variable into EEPROM at position i (4 bytes)
 void EEPROM_writeQuad(byte i,byte *v) {
@@ -75,4 +130,3 @@ float EEPROM_readFloat(byte i) {
   EEPROM_readQuad(i,(byte*)&f);
   return f;
 }
-#endif

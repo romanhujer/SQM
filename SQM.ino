@@ -28,64 +28,37 @@
   Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 
 */
-#define Version "1.0.5"
-String SERIAL_NUMBER = "20191015";
+#define Version "1.0.6"
+String SERIAL_NUMBER = "20191017";
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
-#include <Wire.h>
 
-#ifdef USE_EEPROM_ON
- #include <EEPROM.h>
-#endif 
+
+
+#include <Wire.h>
+#include <EEPROM.h>
+#include <BMx280I2C.h>
+#include <U8x8lib.h>
+#include "SQM_TSL2591.h"
 
 // Setup  OLed Display
-#ifdef USE_OLED_ON
-  #ifdef USE_U8x8_ON     
-    #include <U8x8lib.h>
-    #ifdef SH1106_ON
+
+#ifdef SH1106_ON
       U8X8_SH1106_128X64_NONAME_HW_I2C OledDisp(/* reset=*/ U8X8_PIN_NONE);
-    #endif  
-    #ifdef SSD1306_ON
-      U8X8_SSD1306_128X64_NONAME_HW_I2C OledDisp(/* reset=*/ U8X8_PIN_NONE);
-    #endif 
-  #endif    
-  #ifdef USE_U8G2_ON
-    #include <U8g2lib.h>
-    #ifdef SH1106_ON
-      U8G2_SH1106_128X64_NONAME_F_HW_I2C  OledDisp(U8G2_R0, /* reset=*/ U8X8_PIN_NONE); 
-    #endif
-    #ifdef SSD1306_ON
-     U8G2_SSD1306_128X64_NONAME_F_HW_I2C OledDisp(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);
-    #endif 
-  #endif
-  #ifdef USE_U8GLIB_ON
-    #include <U8glib.h>
-    #ifdef SH1106_ON
-    U8GLIB_SH1106_128X64 OledDisp(U8G_I2C_OPT_NONE);
-    #endif
-    #ifdef  SSD1306_ON
-    U8GLIB_SSD1306_128X64 OledDisp(U8G_I2C_OPT_NONE);
-    #endif
-  #endif
-#endif
+#endif  
+#ifdef SSD1306_ON
+       U8X8_SSD1306_128X64_NONAME_HW_I2C OledDisp(/* reset=*/ U8X8_PIN_NONE);
+#endif 
 
-#ifdef USE_WEATHER_SENSOR_ON
 // Setup temperatue sensor
-  #include <BMx280I2C.h>
-  BMx280I2C bme(BME_I2C_ADDRESS);
-#endif
+BMx280I2C bme(BME_I2C_ADDRESS);
 
-#ifdef USE_SQM_SENSOR_ON
 // Setup for SQM TSL2591
-  #include "SQM_TSL2591.h"
-  SQM_TSL2591 sqm = SQM_TSL2591(2591);
-#endif
+SQM_TSL2591 sqm = SQM_TSL2591(2591);
 
-#ifdef CALIBRATION_ON 
-  float SqmCalOffset =  SQM_CAL_OFFSET ;   // SQM Calibration offset from EEPROM
-  float TempCalOffset = TEMP_CAL_OFFSET;   // Temperature Calibration offset from EEPROM
-#endif
+float SqmCalOffset =  SQM_CAL_OFFSET ;   // SQM Calibration offset from EEPROM
+float TempCalOffset = TEMP_CAL_OFFSET;   // Temperature Calibration offset from EEPROM
 
 boolean InitError = false;
 boolean USBmodeON = false;
@@ -100,22 +73,15 @@ uint16_t counter = 0;
 byte page = 0;
 String BME_Msg;
 String TSL_Msg;
+char oled[6] = "A5,11";
 
 void setup() {
 
   Wire.begin(); 
-
   pinMode(ModePin, INPUT_PULLUP);
-
-#ifdef BUZZER_ON
   pinMode(BuzzerPin, OUTPUT);
-#endif
-
   Serial.begin(SERIAL_BAUD);
   Serial.setTimeout(1000);
-
-#ifdef USE_WEATHER_SENSOR_ON
-  
   if ( bme.begin()){ 
      if (bme.isBME280()){
         Humidity = true;
@@ -125,102 +91,76 @@ void setup() {
         bme.writeOversamplingTemperature(BMx280MI::OSRS_T_x16);
         bme.writeOversamplingHumidity(BMx280MI::OSRS_H_x16);
      } else {
+        Humidity = false;
         BME_Msg =  "no Humidity";
-        Humidity = false ;
      }
   } else {
        BME_Msg =  "BME Err";
        InitError = true;
   }
-#else   
-  BME_Msg =  "no Weather";
-#endif 
+
 #ifdef DEBUG_ON
   Serial.println(BME_Msg);
 #endif
 
-#ifdef USE_SQM_SENSOR_ON
-  void readSQM(void);
+void readSQM(void);
   if (sqm.begin()) {
     TSL_Msg = "TSL2591 OK";
-  #ifdef DEBUG_ON
+#ifdef DEBUG_ON
     sqm.verbose = true;
-  #else
+#else
     sqm.verbose = false;
-  #endif
+#endif
     sqm.config.gain = TSL2591_GAIN_LOW;
     sqm.config.time = TSL2591_INTEGRATIONTIME_200MS;
     sqm.configSensor();
-  #ifdef DEBUG_ON
+#ifdef DEBUG_ON
     sqm.showConfig();
-  #endif
-  }
+#endif
+  } 
   else {
-    TSL_Msg = "SQM Err";
+    TSL_Msg = "TSL2591 Err";
     InitError = true;
-  }
-#else 
-    TSL_Msg = "No SQM";
-#endif 
+  } // end of if (sqm.begin())
     
 #ifdef DEBUG_ON
   Serial.println(SQM_Msg);
 #endif
-
-  
-#ifdef USE_OLED_ON
- if ( OledDisp.begin()) {
-    OledDisp.setFont(OLED_FONT);
- #ifndef USE_U8GLIB_ON 
-    OledDisp.setPowerSave(0);
- #endif   
  
-   DisplFirstPage( TSL_Msg, BME_Msg);
-
+// Init Oled Dislay
+if ( OledDisp.begin()) {
+    OledDisp.setFont(OLED_FONT);
+    OledDisp.setPowerSave(false);
+    oled[3]='1';
+    oled[4]= (ReadEEAutoContras())? '1' : '0';
+    DisplFirstPage( TSL_Msg, BME_Msg);
   }
   else {
     InitError = true;
     Serial.println("OLED Err");
-  }
-#else
-   Serial.println("SQM no OLED V" + Version);
-   Serial.println(SQM_Msg);
-   Serial.println(BME_Msg); 
-#endif 
+  } // end of if (sqm.begin())
+
   if (InitError) {
      for (byte _i = 0; _i < 20; _i++) {
-#ifdef BUZZER_ON    
-      buzzer(50);
-#endif
-      delay(50);
+        buzzer(50);
+        delay(50);
      }
 #ifdef DEBUG_ON
   Serial.println("System Error!");
 #endif
      while (true);
-   }
-#ifndef USE_U8x8_ON     
- #ifdef BUZZER_ON
-    buzzer(500);
- #endif
-#endif
-  delay(1000); // Pause for 2 seconds
-#ifdef CALIBRATION_ON 
-  #ifdef USE_EEPROM_ON
-    SqmCalOffset = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
-    TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
-  #endif
-  sqm.setCalibrationOffset(SqmCalOffset); 
-  #ifdef USE_OLED_ON
-     DisplCalData();      
-#ifndef USE_U8x8_ON     
-    #ifdef BUZZER_ON
-      buzzer(500);
-    # endif
-#endif    
-   delay(1000); // Pause for 2 seconds
-  #endif
-#endif
+   } // end of if (InitError) 
+   
+   delay(1000); // Pause for 1 seconds
+
+   SqmCalOffset = ReadEESqmCalOffset();     // SQM Calibration offset from EEPROM
+   TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
+   
+   sqm.setCalibrationOffset(SqmCalOffset);  // call offset
+   
+   DisplCalData();      
+//      buzzer(500);
+    delay(1000); // Pause for 1 seconds
 
 } // end of Setup
 
@@ -231,69 +171,56 @@ void loop() {
   
   if (digitalRead(ModePin))   {
     SerialOK  = false;
-#ifdef BUZZER_ON
     if (USBmodeON) {
       buzzer(200);
     }
-#endif
     USBmodeON = false;
   }
   else {
-#ifdef BUZZER_ON
+
     if (!USBmodeON) {
       buzzer(200);
     }
-#endif
     USBmodeON = true;
   }
   if ( !USBmodeON ) {
-#ifdef USE_WEATHER_SENSOR_ON    
+    OledDisp.setPowerSave(false);
+    oled[3]='1';
     ReadWeather() ;
-#endif
 
-#ifdef USE_SQM_SENSOR_ON
-  #ifdef CALIBRATION_ON 
-    #ifdef USE_WEATHER_SENSOR_ON    
-      sqm.setTemperature( temp );
-    #endif
-  #endif
+    if (ReadEEAutoTempCal()) sqm.setTemperature( temp );  //temp call
+    
     sqm.takeReading();  
+    
     DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '#'); 
-#else 
-    DisplSqm( 0., 0., int(temp+0.5), int(hum), int(pres / 100), '#');
-#endif     
-    delay(2000);
+
+    delay(3000);
+    
   }
     else {
 //
 // USB mode 
 // ======================================================
     if (!SerialOK) {
-#ifdef USE_OLED_ON      
-     DisplWaitUSB('@');
-     delay(50);
-#else       
-    Serial.println("Wait Serial data");      
-#endif      
+      DisplWaitUSB('@');
+      delay(50);
     }
-     while ( Serial.available()) {   
+     while ( Serial.available()) {       
+      char  _sign;
+      float _f;   
       SerialOK  = true;
+      
+      
       if (digitalRead(ModePin))  break ;  // check end USB mode
-#ifdef USE_WEATHER_SENSOR_ON    
+
       ReadWeather();
-#endif
-#ifdef CALIBRATION_ON
-  #ifdef USE_WEATHER_SENSOR_ON    
-      sqm.setTemperature( temp );
-  #endif      
-#endif
+      if (ReadEEAutoTempCal()) sqm.setTemperature( temp );   //calib
+
       String counter_string = String(counter++);
       while ( counter_string.length() < 10) {
         counter_string = '0' + counter_string;
       }
-      char _sign;
-      float _f;   
-#ifdef USE_SQM_SENSOR_ON
+   
       sqm.takeReading();
       String sqm_string = String(abs(sqm.mpsas), 2);
       while ( sqm_string.length() < 5) {
@@ -301,28 +228,25 @@ void loop() {
       }
       _sign = ( sqm.mpsas < 0 ) ? '-' : ' ';
       sqm_string = _sign + sqm_string;
-#else 
-      String sqm_string = " 00.00";
-#endif
-#ifdef USE_WEATHER_SENSOR_ON
+
+
       String temp_string = String( abs(temp), 1);
       while ( temp_string.length() < 5) {
         temp_string = '0' + temp_string;
       }
       _sign = ( temp < 0 ) ? '-' : ' ';
       temp_string = _sign + temp_string;
-#else
-      String temp_string = " 000.0";
-#endif
    
       String command = Serial.readStringUntil('x');
 
-      if ( command.equals("i")) {  // Unit information request (note lower case "i")
+// Unit information request (note lower case "i")
+      if ( command.equals("i")) {  
           response = "i,00000002,00000003,00000001,"
                      + SERIAL_NUMBER;
         Serial.println(response);
 
-      } else if ( command.equals("r")) { // Reading request
+// Reading request
+      } else if ( command.equals("r")) { 
          response = "r," + sqm_string 
                         + "m,0000002591Hz," 
                         + counter_string 
@@ -330,7 +254,8 @@ void loop() {
                         + temp_string +"C";
         Serial.println(response);
 
-      } else if (command.equals("u")) { // Unaveraged reading request
+// Unaveraged reading request
+      } else if (command.equals("u")) { 
         response = "u," + sqm_string 
                         + "m,0000002591Hz," 
                         + counter_string 
@@ -339,8 +264,9 @@ void loop() {
         Serial.println(response);     
 
 #ifdef EXTENDET_PROTOCOL_ON
-      } else if (command.equals("w")) { // My extension request for weather information
-  #ifdef USE_SQM_SENSOR_ON
+
+// My extension request for weather information
+      } else if (command.equals("w")) { 
         String ir_string = String(sqm.ir);
         while ( ir_string.length() < 5) { 
         ir_string = '0' + ir_string;
@@ -353,13 +279,6 @@ void loop() {
         while ( f_string.length() < 5) { 
           f_string = '0' + f_string;
         }
-        
-   #else
-         String ir_string =  "00000";
-         String vis_string = "00000";
-         String f_string   = "00000";
-   #endif
-   #ifdef USE_WEATHER_SENSOR_ON        
         String hum_string = String(int(hum));
         while ( hum_string.length() < 3) { 
           hum_string = '0' + hum_string;
@@ -368,16 +287,8 @@ void loop() {
         while ( pres_string.length() < 4) { 
          pres_string = '0' + pres_string;
        }
-   #else
-        String hum_string = "000";
-        String pres_string = "0000";
-   #endif
-        response = "w," + sqm_string + "m,"
-   #ifdef USE_SQM_SENSOR_ON        
+       response = "w," + sqm_string + "m,"
                           + String(sqm.dmpsas, 2) + "e,"
-   #else     
-                          + "0.00e,"
-   #endif                          
                           + f_string + "f,"
                           + ir_string + "i,"
                           + vis_string + "v,"                          
@@ -385,9 +296,11 @@ void loop() {
                           + pres_string + "p,"
                           + temp_string + "C";
         Serial.println(response);
-#endif
-#ifdef CALIBRATION_ON 
-          } else if (command.equals("c")) { // read Calibration information request
+        
+#endif // end of  EXTENDET_PROTOCOL_ON
+
+// read Calibration information request
+       } else if (command.equals("c")) { 
               sqm_string = String(abs(SqmCalOffset), 2);
               while ( sqm_string.length() < 9) {
                  sqm_string = '0' + sqm_string;
@@ -401,16 +314,16 @@ void loop() {
               }
               _sign = ( TempCalOffset < 0 ) ? '-' : ' ';
               temp_string = _sign + temp_string;
-
               response= "c," + sqm_string  + "m," 
                              + "0000000.000s,"
                              + temp_string + "C,"
                              + sqm_string  + "m,"
                              + temp_string + "C"; 
              Serial.println(response);
-  #ifdef  USE_EEPROM_ON       
-        }   else if ( command[0] == 'z' ) {
+          }   else if ( command[0] == 'z' ) {
               response = command.substring(1,4);
+
+// Calibartion commad           
            if ( response.equals("cal")) { 
               char _x = command[4];                       
               if (  _x == '5') {    // Calibration Light offest 
@@ -425,7 +338,9 @@ void loop() {
                 sqm_string = _sign + sqm_string;
                 Serial.println("z,5,"+ sqm_string + 'm');
               } 
-              else if ( (_x == '6') || (_x == '8') ) {  // Calibration Temperature
+              
+// Calibration Temperature
+              else if ( (_x == '6') || (_x == '8') ) {  
                 
                 response = command.substring(5); 
                 TempCalOffset=response.toFloat();          
@@ -439,24 +354,72 @@ void loop() {
                 temp_string = _sign + temp_string;
                 Serial.println("z," + String(_x )+ ',' + temp_string + 'C');
                } 
-               else if ( _x == '7') { // Calibration Light offest                
+
+// Calibration Light offest                               
+               else if ( _x == '7') {                      
                    Serial.println("z," + String(_x) + ',' + command.substring(5) + 's');                
+                   }
+// Set defult display contras                                
+               else if ( _x == '9') {           
+                   response = command.substring(5);
+                   WriteEEScontras( response.toInt());         
+                   Serial.println("z," + String(_x) + ',' + command.substring(5) + 'x');                
+               }
+               
+// Enable temperature callibration               
+               else if ( _x == 'A') { 
+                    WriteEEAutoTempCal(true);
+                    Serial.println("zAaL");                        
+               }
+
+// Disable temperature callibration               
+               else if ( _x == 'B') { 
+                    WriteEEAutoTempCal(true);
+                    Serial.println("zBaL");                        
+               }
+
+// Delete calibration - set default value               
+               else if ( _x == 'D') { 
+                
+                  SqmCalOffset =  SQM_CAL_OFFSET ;   // set to default 
+                  TempCalOffset = TEMP_CAL_OFFSET;   // set to default 
+                  WriteEETempCalOffset(TempCalOffset); 
+                  WriteEESqmCalOffset(SqmCalOffset); 
+                  WriteEEScontras(DEFALUT_CONTRAS); 
+                  Serial.println("zxdL");                        
                }
         
-          } else Serial.println("ERR:" + command );
-  #endif                   
-#endif            
+          }           
+// Disable Oled Display          
+        } else if (command.equals("A50")) {
+          oled[3] = '0';
+          OledDisp.setPowerSave(true);        
+          Serial.println(oled);
+// Enable Oled Display                    
+        } else if (command.equals("A51")) {
+          oled[3] = '1';
+          OledDisp.setPowerSave(false); 
+          Serial.println(oled);       
+// Disable Autocontras                    
+        } else if (command.equals("A5d")) {
+          oled[4] = '0';
+          WriteEEAutoContras(false);
+          Serial.println(oled);
+// Enable Autocontras                              
+        } else if (command.equals("A5e")) {
+          oled[4] = '1';
+          WriteEEAutoContras(true);
+          Serial.println(oled);
+// Display status          
+        } else if (command.equals("A5")) {
+//         oled[4]= (ReadEEAutoContras())? '1' : '0';
+          Serial.println(oled);
         }
-#ifdef USE_OLED_ON        
+
         DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '@');
-#endif 
-#ifdef CALIBRATION_ON 
-    #ifdef USE_EEPROM_ON
-      SqmCalOffset  = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
-      TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
-  #endif
-  sqm.setCalibrationOffset(SqmCalOffset);
-#endif    
+        SqmCalOffset  = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
+        TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
+        sqm.setCalibrationOffset(SqmCalOffset);
        
     } // end of while ( Serial.available() )
   }  // end of if (digitalRead(ModePin)) 
