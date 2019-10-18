@@ -20,10 +20,10 @@ Arduino compatible Sky Quality Meter using the TSL2591
 
 #### Read data  (Original Unihedron protokol)
 * Request: rx  
-* Response: r, 10.28m,0000002591Hz,0000000002c,000005.000s, 026.2C
+* Response: r, 10.28m,0000000000Hz,0000000002c,000005.000s, 026.2C
 or
 * Request: ux  
-* Response: u, 10.33m,0000002591Hz,0000000004c,000005.000s, 026.4C
+* Response: u, 10.33m,0000000000Hz,0000000004c,000005.000s, 026.4C
 
 #### Read extension data with weather informations (is my extension)
 * Request: wx  
@@ -42,7 +42,7 @@ Positive value:
 * Request:  zcal100.01x
 * Response: z,1, 00.01m 
 
-#### Write Temperature offset to EEPROM value range (-50°C ... 50°C)
+#### Write Temperature offset to EEPROM value range (-50Â°C ... 50Â°C)
 Negative value: 
 * Request:  zcal2-1.5x
 * Response: z,2,-01.5C 
@@ -56,12 +56,12 @@ Positive value:
 * Request:  zcal3 005x
 * Response: z,3,005
 
-#### Enabel SQM  temperature calibration value
+#### Enabel SQM  temperature calibration 
 
 * Request: zcalex
 * Response: zxeaL 
 
-#### Disable SQM  temperature calibration value  (note lower case "d")
+#### Disable SQM  temperature calibration   (note lower case "d")
 
 * Request:  zcaldx
 * Response: zxdaL 
@@ -71,7 +71,7 @@ Positive value:
 * Request: zcalDx
 * Response: zxdL 
 
-#### Disable Oled display mode
+#### Oled display mode
 
 * Request: A50x   Disable OLED display in USB mode
 * Request: A51x   Enable OLED display in USB mode
@@ -83,5 +83,4 @@ Positive value:
                || 0 - disable 1 - enable auto Dimmer (contras) for OLED Display    
                |_ 0 - disable 1 - enable OLED Display in USB mode 
 
-    
 
