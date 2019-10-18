@@ -83,33 +83,18 @@ void setup() {
   if ( bme.begin()){ 
      if (bme.isBME280()){
         Humidity = true;
-#ifdef SH1106_ON                
         BME_Msg  = "BME280  OK";
-#endif  
-#ifdef SSD1306_ON
-        BME_Msg  = "BME"; 
-#endif                     
         bme.resetToDefaults();        
         bme.writeOversamplingPressure(BMx280MI::OSRS_P_x16);
         bme.writeOversamplingTemperature(BMx280MI::OSRS_T_x16);
         bme.writeOversamplingHumidity(BMx280MI::OSRS_H_x16);
      } else {
         Humidity = false;
-#ifdef SH1106_ON        
-        BME_Msg =  "no Humidity";
-#endif
-#ifdef SSD1306_ON        
-        BME_Msg =  "noH";
-#endif        
-         
+        BME_Msg =  "no Humidity";        
      }
   } else {
-#ifdef SH1106_ON            
+
        BME_Msg =  "BME Err";
-#endif
-#ifdef SSD1306_ON        
-       BME_Msg =  "Berr";
-#endif       
        InitError = true;
   }
 
@@ -129,12 +114,7 @@ void readSQM(void);
 //    sqm.showConfig();
   } 
   else {
-#ifdef SH1106_ON                
     TSL_Msg = "TSL2591 Err";
-#endif
-#ifdef SSD1306_ON        
-    TSL_Msg = "Terr";
-#endif            
     InitError = true;
   } // end of if (sqm.begin())
     
@@ -160,7 +140,7 @@ if ( OledDisp.begin()) {
      while (true);
    } // end of if (InitError) 
    
-   delay(1000); // Pause for 1 seconds
+   delay(750); // Pause for 1 seconds
 
    SqmCalOffset = ReadEESqmCalOffset();     // SQM Calibration offset from EEPROM
    TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
@@ -168,7 +148,7 @@ if ( OledDisp.begin()) {
    sqm.setCalibrationOffset(SqmCalOffset);  // call offset
    
    DisplCalData();      
-   delay(1000); // Pause for 1 seconds
+   delay(1500); // Pause for 1 seconds
 
 } // end of Setup
 
@@ -202,7 +182,7 @@ void loop() {
     
     DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '#'); 
 
-    delay(3000);
+    delay(2000);
     
   }
     else {
@@ -215,7 +195,6 @@ void loop() {
     }
      while ( Serial.available()) {       
       char  _sign;
-//      float _f;   
       SerialOK  = true;
       
       
@@ -255,22 +234,22 @@ void loop() {
 // Reading request
       } else if ( command.equals("r")) { 
 
-         response = "r," + sqm_string 
-                        + "m,0000002591Hz," 
+         Serial.println("r," + sqm_string 
+//                      + "m,0000002591Hz," 
+                        + "m,0000000000Hz," 
                         + counter_string 
-                        + "c,0000000.200s," 
-                        + temp_string +"C";
-         Serial.println(response);
-
+                        + "c,0000000.000s," 
+                        + temp_string +'C');
+#ifndef SSD1306_ON
 // Unaveraged reading request
       } else if (command.equals("u")) { 
-        response = "u," + sqm_string 
-                        + "m,0000002591Hz," 
+         Serial.println("u," + sqm_string 
+                        + "m,0000000000Hz,"                         
                         + counter_string 
-                        + "c,0000000.200s," 
-                        + temp_string +"C";
-        Serial.println(response);     
+                        + "c,0000000.000s," 
+                        + temp_string +'C');
 
+#endif
 #ifdef EXTENDET_PROTOCOL_ON
 
 // My extension request for weather information
@@ -295,101 +274,94 @@ void loop() {
         while ( pres_string.length() < 4) { 
          pres_string = '0' + pres_string;
        }
-       response = "w," + sqm_string + "m,"
+       Serial.println("w," + sqm_string + "m,"
                           + String(sqm.dmpsas, 2) + "e,"
                           + f_string + "f,"
                           + ir_string + "i,"
                           + vis_string + "v,"                          
                           + hum_string + "h,"
                           + pres_string + "p,"
-                          + temp_string + "C";
-        Serial.println(response);
+                          + temp_string + 'C');
         
 #endif // end of  EXTENDET_PROTOCOL_ON
 
-// read Calibration information request
-       } else if (command.equals("c")) { 
+// read Config information request
+       } else if (command.equals("g")) { 
               sqm_string = String( (SqmCalOffset < 0 ) ? - SqmCalOffset : SqmCalOffset, 2);            
-              while ( sqm_string.length() < 9) {
+              while ( sqm_string.length() < 6) {
                  sqm_string = '0' + sqm_string;
               }
-              _sign = ( SqmCalOffset < 0 ) ? '-' : '0';
+              _sign = ( SqmCalOffset < 0 ) ? '-' : ' ';
               sqm_string = _sign + sqm_string;
-//              _f= ( TempCalOffset < 0 )? -TempCalOffset : TempCalOffset;  
-//              temp_string = String( _f, 1);
               temp_string = String( ( TempCalOffset < 0 )? -TempCalOffset : TempCalOffset, 1);  
               while ( temp_string.length() < 5) {
                 temp_string = '0' + temp_string;
               }
               _sign = ( TempCalOffset < 0 ) ? '-' : ' ';
               temp_string = _sign + temp_string;
-              response= "c," + sqm_string  + "m," 
-                             + "0000000.000s,"
-                             + temp_string + "C,"
-                             + sqm_string  + "m,"
-                             + temp_string + "C"; 
-             Serial.println(response);
+              oled[4]= (ReadEEAutoContras())? '1' : '0';
+              Serial.print("g," + sqm_string  + "m," 
+                             + temp_string + "C,TC:" 
+                             + (( ReadEEAutoTempCal())? "Y," : "N,") 
+                             + oled 
+                             + ",DC:" );
+              Serial.println(ReadEEcontras());                                  
+                                                     
+// Configuration commad                     
           }   else if ( command[0] == 'z' ) {
               response = command.substring(1,4);
 
-// Calibartion commad           
            if ( response.equals("cal")) { 
               char _x = command[4];                       
-              if (  _x == '5') {    // Calibration Light offest 
+              if (  _x == '1') {    // Calibration Light offest 1
                 response = command.substring(5); 
                 SqmCalOffset=response.toFloat();        
                 WriteEESqmCalOffset(SqmCalOffset);          
                 sqm_string = String( (SqmCalOffset <0 )? -SqmCalOffset : SqmCalOffset , 2);
-                while ( sqm_string.length() < 9) {
+                while ( sqm_string.length() < 5) {
                    sqm_string = '0' + sqm_string;
                 }
-                _sign = ( SqmCalOffset < 0 ) ? '-' : '0';
+                _sign = ( SqmCalOffset < 0 ) ? '-' : ' ';
                 sqm_string = _sign + sqm_string;
-                Serial.println("z,5,"+ sqm_string + 'm');
+                Serial.println("z,1,"+ sqm_string + 'm');
               } 
               
 // Calibration Temperature
-              else if ( (_x == '6') || (_x == '8') ) {  
+              else if  ( _x == '2') {  
                 
                 response = command.substring(5); 
                 TempCalOffset=response.toFloat();          
                 WriteEETempCalOffset(TempCalOffset); 
-//                _f= ( TempCalOffset < 0 )? -TempCalOffset : TempCalOffset;  
-//                temp_string = String( _f, 1);
                 temp_string = String( ( TempCalOffset < 0 )? -TempCalOffset : TempCalOffset, 1);
                 while ( temp_string.length() < 5) {
                   temp_string = '0' + temp_string;
                 }
                 _sign = ( TempCalOffset < 0 ) ? '-' : ' ';
                 temp_string = _sign + temp_string;
-                Serial.println("z," + String(_x )+ ',' + temp_string + 'C');
-               } 
+                Serial.println("z,2," + temp_string + 'C');
+              } 
 
-// Calibration Light offest                               
-               else if ( _x == '7') {                      
-                   Serial.println("z," + String(_x) + ',' + command.substring(5) + 's');                
-                   }
 // Set display contras                                
-               else if ( _x == '9') {           
+               else if ( _x == '3') {           
                    response = command.substring(5);
                    WriteEEScontras( response.toInt());         
-                   Serial.println("z," + String(_x) + ',' + command.substring(5) + 'x');                
+                   Serial.println("z,3," + command.substring(5) + 'x');                
                }
                
 // Enable temperature callibration               
-               else if ( _x == 'A') { 
+               else if ( _x == 'e') { 
                     WriteEEAutoTempCal(true);
-                    Serial.println("zAaL");                        
+                    Serial.println("zeaL");                        
                }
 
-// Disable temperature callibration               
-               else if ( _x == 'B') { 
+// Disable temperature callibration (note lower case "d")            
+               else if ( _x == 'd') { 
                     WriteEEAutoTempCal(true);
-                    Serial.println("zBaL");                        
+                    Serial.println("zdaL");                        
                }
 
-// Delete calibration - set default factory value see Setup.h              
-               else if ( _x == 'D') { 
+// Delete calibration (note upper case "D") - set default factory value see Setup.h              
+               else if ( _x == 'D') {  
                   SqmCalOffset =  SQM_CAL_OFFSET ;   // set to default 
                   TempCalOffset = TEMP_CAL_OFFSET;   // set to default 
                   WriteEETempCalOffset(TempCalOffset); 
@@ -397,8 +369,8 @@ void loop() {
                   WriteEEScontras(DEFALUT_CONTRAS); 
                   Serial.println("zxdL");                        
                }
-        
           }           
+          
 // Disable Oled Display          
         } else if (command.equals("A50")) {
           oled[3] = '0';
@@ -421,10 +393,10 @@ void loop() {
           Serial.println(oled);
 // Display status          
         } else if (command.equals("A5")) {
-//         oled[4]= (ReadEEAutoContras())? '1' : '0';
+          oled[4]= (ReadEEAutoContras())? '1' : '0';
           Serial.println(oled);
         }
-
+// View current information
         DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '@');
         SqmCalOffset  = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
         TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM

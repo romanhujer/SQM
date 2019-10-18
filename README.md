@@ -21,37 +21,67 @@ Arduino compatible Sky Quality Meter using the TSL2591
 #### Read data  (Original Unihedron protokol)
 * Request: rx  
 * Response: r, 10.28m,0000002591Hz,0000000002c,000005.000s, 026.2C
-
 or
- 
 * Request: ux  
 * Response: u, 10.33m,0000002591Hz,0000000004c,000005.000s, 026.4C
 
 #### Read extension data with weather informations (is my extension)
-
 * Request: wx  
 * Response: w, 10.82m,0.02e,02577i,02209v, 026.7C,037h,0947p
 
-#### Read calibratin data  (is my modication)
-
-* Request: cx  
-* Response: c,0000000002c 10.28m,0000002591Hz,0000000002c,000005.000s, 026.2C
+#### Read config data  
+* Request:  gx
+* Response: g, 000.00m, 000.0C,TC:Y,A5,11,DC:0
  
-#### Write SQM calibration offset to EEPROM (is my modication)
+#### Write SQM offset to EEPROM value range (-25m ... 25m)
 Negative value: 
-* Request:  zcal5-0.05x
-* Response: z,5,-000000.05m
+* Request:  zcal1-0.05x
+* Response: z,1,-00.05m
 
 Positive value:  
-* Request:  zcal50.01x
-* Response: z,5,0000000.01m 
+* Request:  zcal100.01x
+* Response: z,1, 00.01m 
 
-#### Write Temperature offset to EEPROM (is my modication)
+#### Write Temperature offset to EEPROM value range (-50°C ... 50°C)
 Negative value: 
-* Request:  zcal6-0.5x
-* Response: z,5,-00.5C 
+* Request:  zcal2-1.5x
+* Response: z,2,-01.5C 
 
 Positive value:  
-* Request:  zcal600.5x
-* Response: z,5, 00.5C 
+* Request:  zcal2 00.5x
+* Response: z,2, 00.5C 
+
+
+#### Write default display contras to EEPROM value range (0-255) 
+* Request:  zcal3 005x
+* Response: z,3,005
+
+#### Enabel SQM  temperature calibration value
+
+* Request: zcalex
+* Response: zxeaL 
+
+#### Disable SQM  temperature calibration value  (note lower case "d")
+
+* Request:  zcaldx
+* Response: zxdaL 
+
+#### Erase EEPROM set to default value 
+
+* Request: zcalDx
+* Response: zxdL 
+
+#### Disable Oled display mode
+
+* Request: A50x   Disable OLED display in USB mode
+* Request: A51x   Enable OLED display in USB mode
+* Request: A5dx   Disable auto dimmer (contras) for OLED display
+* Request: A5ex   Enable auto dimmer (contras) for OLED display
+* Request: A5x    Query for current OLED display mode
+
+* Response: A5,xy 
+               || 0 - disable 1 - enable auto Dimmer (contras) for OLED Display    
+               |_ 0 - disable 1 - enable OLED Display in USB mode 
+
+    
 
