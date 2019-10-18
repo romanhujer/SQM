@@ -39,7 +39,7 @@ void ReadWeather() {
   }
 }
 
-void DisplFirstPage( String &_tsl, String &_bme) {
+void DisplFirstPage( ) {
     OledDisp.setContrast(ReadEEcontras());
     if (page != 1) {
       OledDisp.clear();
@@ -50,14 +50,12 @@ void DisplFirstPage( String &_tsl, String &_bme) {
     OledDisp.print("SQM Ready V");
     OledDisp.print(Version);
     OledDisp.setCursor(0, 2);
-    OledDisp.print("S/N:");
+    OledDisp.print("SN: ");
     OledDisp.print(SERIAL_NUMBER);
     OledDisp.setCursor(0, 4);
-    OledDisp.print(_tsl);
+    OledDisp.print(TSL_Msg);
     OledDisp.setCursor(0, 6);
-    OledDisp.print(_bme);
-    //    OledDisp.refreshDisplay();
-
+    OledDisp.print(BME_Msg);
 }
 
 void DisplCalData () {
@@ -73,18 +71,17 @@ void DisplCalData () {
   OledDisp.print("SQ offset:");
   if (SqmCalOffset >= 0)  OledDisp.print(' ');
   OledDisp.print( String(SqmCalOffset,2));
-  OledDisp.print("M");
+  OledDisp.print('M');
   OledDisp.setCursor(0, 4);
   OledDisp.print("TE offset:");
   if (TempCalOffset >= 0) OledDisp.print(' ');
   OledDisp.print(String(TempCalOffset,1));
   OledDisp.print(char(0xb0));
   OledDisp.print('C');
-//  OledDisp.print("C");
   OledDisp.setCursor(0, 6);
-  OledDisp.print("TC ");
+  OledDisp.print("TC:");
   OledDisp.print((ReadEEAutoTempCal()) ? 'Y': 'M');
-  OledDisp.print(" Contr." );
+  OledDisp.print(" DMMR:" );
   if (ReadEEAutoContras())
     OledDisp.print("Auto" ); 
    else {
@@ -92,8 +89,7 @@ void DisplCalData () {
     if (_c <10) OledDisp.print(" 00");
     else if ( _c <100) OledDisp.print(" 0");
     OledDisp.print( _c );
-   }
-  
+   } 
 }   
 
 
@@ -128,7 +124,7 @@ void DisplSqm(  double mpsas, double dmpsas, int temp, byte hum , int pres, char
     OledDisp.print(char(0xb1));
     OledDisp.print(dmpsas);
     OledDisp.print('M');
-    if ( abs( temp ) < 10) OledDisp.print(' ');
+    if ( ( ( temp < 0 ) ? -temp : temp) < 10) OledDisp.print(' ');
     if ( temp >= 0 )  OledDisp.print(' ');
     OledDisp.print( temp );
     OledDisp.print(char(0xb0));
@@ -154,6 +150,5 @@ void DisplWaitUSB (char blk)  {
     OledDisp.setCursor(0, 2);
     OledDisp.print("Wait USB data ");
     OledDisp.print(Blik ? blk : ' ' );
-  //  OledDisp.refreshDisplay();
     _blk_change_status();
 }

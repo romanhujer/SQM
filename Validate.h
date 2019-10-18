@@ -13,6 +13,7 @@
     #ifdef OLED_DISP_ON
       #error "Select only one display type"
     #endif
+    #define OLED_DISP_ON
 #endif
 #ifndef OLED_DISP_ON
     #error "Please select one display type"

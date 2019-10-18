@@ -7,9 +7,7 @@
 #ifndef SETUP_H
 #define SETUP_H
 
-
-#define ModePin 5         // Mode Pin
-
+#define ModePin 5         // Mode Pin  
 #define BuzzerPin  4      // Buzzer Pin
 
 // I2C mode for BME280 sensor
@@ -17,7 +15,6 @@
 // GND ----- SDO (I2C Address 0x77)
 // 5V ------ SDO (I2C Address 0x76)
 #define BME_I2C_ADDRESS 0x76  //Default I2C for BME280 sensor 
-
 
 #define OLED_FONT  u8x8_font_7x14B_1x2_f
 
