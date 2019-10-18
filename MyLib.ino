@@ -60,6 +60,42 @@ void DisplFirstPage( String &_tsl, String &_bme) {
 
 }
 
+void DisplCalData () {
+  OledDisp.setContrast(ReadEEcontras());
+  if (page != 2) {
+    OledDisp.clear();
+    buzzer(200);
+  } 
+  page=2;
+  OledDisp.setCursor(0, 0);
+  OledDisp.print("Calibration data");
+  OledDisp.setCursor(0, 2);
+  OledDisp.print("SQ offset:");
+  if (SqmCalOffset >= 0)  OledDisp.print(' ');
+  OledDisp.print( String(SqmCalOffset,2));
+  OledDisp.print("M");
+  OledDisp.setCursor(0, 4);
+  OledDisp.print("TE offset:");
+  if (TempCalOffset >= 0) OledDisp.print(' ');
+  OledDisp.print(String(TempCalOffset,1));
+  OledDisp.print(char(0xb0));
+  OledDisp.print('C');
+//  OledDisp.print("C");
+  OledDisp.setCursor(0, 6);
+  OledDisp.print("TC ");
+  OledDisp.print((ReadEEAutoTempCal()) ? 'Y': 'M');
+  OledDisp.print(" Contr." );
+  if (ReadEEAutoContras())
+    OledDisp.print("Auto" ); 
+   else {
+    uint8_t _c = ReadEEcontras();   
+    if (_c <10) OledDisp.print(" 00");
+    else if ( _c <100) OledDisp.print(" 0");
+    OledDisp.print( _c );
+   }
+  
+}   
+
 
 void DisplSqm(  double mpsas, double dmpsas, int temp, byte hum , int pres, char blk) {
   
@@ -75,13 +111,13 @@ void DisplSqm(  double mpsas, double dmpsas, int temp, byte hum , int pres, char
     else {
       OledDisp.setContrast(ReadEEcontras());
    }
-   if (page != 2) {
+   if (page != 3) {
       OledDisp.clear();
   
       buzzer(200);
   
     }
-    page=2;
+    page=3;
     OledDisp.setCursor(0, 0);
     OledDisp.print("Mag/Arc-Sec T");
     OledDisp.print(Blik ? blk : ' ' );
@@ -110,38 +146,14 @@ void DisplSqm(  double mpsas, double dmpsas, int temp, byte hum , int pres, char
 
 void DisplWaitUSB (char blk)  {
     OledDisp.setContrast(ReadEEcontras());
-    if (page != 3) {
+    if (page != 4) {
       OledDisp.clear();
       buzzer(200);
     }
-    page=3;
+    page=4;
     OledDisp.setCursor(0, 2);
     OledDisp.print("Wait USB data ");
     OledDisp.print(Blik ? blk : ' ' );
   //  OledDisp.refreshDisplay();
     _blk_change_status();
 }
-
-
-
-void DisplCalData () {
-  OledDisp.setContrast(ReadEEcontras());
-  if (page != 4) {
-    OledDisp.clear();
-    buzzer(200);
-  } 
-  page=4;
-  OledDisp.setCursor(0, 0);
-  OledDisp.print("Calibration data");
-  OledDisp.setCursor(0, 3);
-  OledDisp.print("SQ offset:");
-  if (SqmCalOffset >= 0)  OledDisp.print(' ');
-  OledDisp.print( String(SqmCalOffset,2));
-  OledDisp.print("M");
-  OledDisp.setCursor(0, 5);
-  OledDisp.print("TE offset:");
-  if (TempCalOffset >= 0) OledDisp.print(' ');
-  OledDisp.print(String(TempCalOffset,1));
-  OledDisp.print(char(0xb0));
-  OledDisp.print("C");
-}   
