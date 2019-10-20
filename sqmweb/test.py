@@ -65,7 +65,7 @@ print(sqm.read_config())
 time.sleep(2)
 
 print('Set temperature offset -2.1')
-print(sqm.set_temp_offset(-2.01))
+print(sqm.set_temp_offset(-2.1))
 print ('Read config')
 print(sqm.read_config())
 time.sleep(2)
@@ -75,7 +75,7 @@ print(sqm.disable_sqm_temp_cal())
 print('Read config')
 print(sqm.read_config())
 print ('Read sqm data')
-#print (sqm.read_sqm_data())
+print (sqm.read_sqm_data())
 time.sleep(2)
 
 
@@ -84,7 +84,7 @@ print(sqm.enable_sqm_temp_cal())
 print('Read config')
 print(sqm.read_config())
 print ('Read sqm data')
-#print (sqm.read_sqm_data())
+print (sqm.read_sqm_data())
 time.sleep(2)
 
 print('Set EEPROM to default value')
@@ -93,10 +93,5 @@ print('Read config')
 print(sqm.read_config())
 time.sleep(2)
 
-
-
-
-
-
-
+print('End test')
 
