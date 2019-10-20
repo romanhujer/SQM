@@ -1,0 +1,11 @@
+
+*.*~
+*~
+*.FCStd1
+*.step
+old*.*
+x.*
+X.*
+*.pyc
+__pycache__
+

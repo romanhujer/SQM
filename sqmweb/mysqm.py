@@ -34,10 +34,12 @@ import serial
 
 
 class tty:
+
     def __init__(self, port = '/dev/ttyUSB0', baud=115200, timeout=2):
         try: 
             print ('Init serial port') 
             self.ser = serial.Serial( port, baud)
+            self.debug = 0
         except serial.SerialException as e:
             sys.stderr.write('ERROR: Could not open port: ' + port + '\n')
             sys.exit(1)     
@@ -45,8 +47,10 @@ class tty:
     def open(self):
         self.ser.isOpen()
 
+
     def send(self, ss):
-        print('Requet:', ss)
+        if self.debug == 1: 
+            print('Requet:', ss)
         self.ser.write(ss)
 
     def recv(self):
@@ -57,62 +61,98 @@ class tty:
 
 
 class  MySQM:
-    def __init__(self, port='/dev/ttyUSB0'):    
+
+    def __init__(self, port='/dev/ttyUSB0', debug=0  ):    
         self.sqm = tty(port); 
+        if debug == 1:
+            self.sqm.debug = 1
         self.sqm.open()
+        self.sqm.debug = debug
 
 # Read box info 
     def read_device_info(self):    
-        self.sqm.send('ix\r')
+        self.sqm.send('ix')
         return self.sqm.recv()
 
 # Unitherdrom request - read sqm data 
     def read_sqm_data(self):
-        self.sqm.send('rx\r')
+        self.sqm.send('rx')
         return self.sqm.recv()
 
 # Unitherdrom request - read unaveraged data 
     def read_sqm_unaveraged(self):
-        self.sqm.send('ux\r')
+        self.sqm.send('ux')
         return self.sqm.recv()
 
 # Extension request - read data with weather informations
     def read_sqm_weather(self):
-        self.sqm.send('wx\r')
+        self.sqm.send('wx')
         return self.sqm.recv()
 
 # Read config data form EEPROM
     def read_config(self):
-        self.sqm.send('gx\r')
+        self.sqm.send('gx')
         return self.sqm.recv()
 
 # Read OLED status
     def read_oled_status(self):
-        self.sqm.send('A5x\n')
+        self.sqm.send('A5x')
         return self.sqm.recv()
         
 # Disable OLED in usb mode
-    def disable_oled(self)
-        self.sqm.send('A50x\n')        
+    def disable_oled(self):
+        self.sqm.send('A50x')        
         return self.sqm.recv()
                                   
 # Enable OLED in usb mode
-    def enable_oled(self)
-        self.sqm.send('A51x\n') 
+    def enable_oled(self):
+        self.sqm.send('A51x') 
         return self.sqm.recv()
 
 # Disable OLED dimmer (Auto contras)
-    def disable_dimmer(self)
-        self.sqm.send('A5dx\n') 
+    def disable_dimmer(self):
+        self.sqm.send('A5dx') 
         return self.sqm.recv()
 
 # Enable OLED dimmer (Auto cotrass)
-    def enable_dimmer(self)
-        self.sqm.send('A5ex\n') 
+    def enable_dimmer(self):
+        self.sqm.send('A5ex') 
         return self.sqm.recv()
 
+# Set  oled contras 
+    def set_oled_contras(self,c): 
+        if c > 255 : 
+            c = 255
+        s = "zcal3%02d" % c
+        self.sqm.send(s)
+        return self.sqm.recv()
 
+# Set sqm offset 
+    def set_sqm_offset(self,c):
+        s = "zcal1%07.3fx" % c
+        self.sqm.send(s)
+        return self.sqm.recv()
 
+# Set Temperature offset
+    def set_temp_offset(self,c):
+        s = "zcal2%06.2fx" % c
+        self.sqm.send(s)
+        return self.sqm.recv()
+
+# Disable SQM Temperature callibration
+    def disable_sqm_temp_cal(self):
+        self.sqm.send('zcaldx')
+        return self.sqm.recv()
+
+# Enabe SQM Temperature callibration
+    def enable_sqm_temp_cal(self):
+        self.sqm.send('zcalex')
+        return self.sqm.recv()
+
+# Set EEPROM to default value
+    def set_EEPROM_default_vaule(self):
+        self.sqm.send('zcalDx')
+        return self.sqm.recv()
 
 
 

@@ -6,13 +6,13 @@
 
 // EEPROM data position 
 #define EEPROM_SQM_CAL_INDEX_C       1
-#define EEPROM_SQM_CAL_INDEX_F       2
-#define EEPROM_TEMP_CAL_INDEX_C      6
-#define EEPROM_TEMP_CAL_INDEX_F      7 
-#define EEPROM_AUTO_TEMP_INDEX_C     10
-#define EEPROM_AUTO_CONTRAS_INDEX_C  11
-#define EEPROM_CONTRAS_INDEX_C       12
-#define EEPROM_CONTRAS_INDEX_B       13
+#define EEPROM_SQM_CAL_INDEX_F       3
+#define EEPROM_TEMP_CAL_INDEX_C      7
+#define EEPROM_TEMP_CAL_INDEX_F      8 
+#define EEPROM_AUTO_TEMP_INDEX_C     14
+#define EEPROM_AUTO_CONTRAS_INDEX_C  15
+#define EEPROM_CONTRAS_INDEX_C       17
+#define EEPROM_CONTRAS_INDEX_B       20
 
 
 // read SQMCalOffset from EEPROM
