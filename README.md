@@ -80,7 +80,9 @@ Positive value:
 * Request: A5x    Query for current OLED display mode
 
 * Response: A5,xy 
+
   x... 0 - disable 1 - enable OLED Display in USB mode 
+  
   y... 0 - disable 1 - enable auto Dimmer (contras) for OLED Display    
 
 
