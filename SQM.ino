@@ -28,8 +28,8 @@
   Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 
 */
-#define Version "1.0.6"
-#define SERIAL_NUMBER "20191018"
+#define Version "1.0.7"
+#define SERIAL_NUMBER "20191020"
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
@@ -201,7 +201,7 @@ void loop() {
       if (digitalRead(ModePin))  break ;  // check end USB mode
 
       ReadWeather();
-      if (ReadEEAutoTempCal()) sqm.setTemperature( temp );   //calib
+      if (ReadEEAutoTempCal()) sqm.setTemperature( temp );   // SQM temp calib
 
       String counter_string = String(counter++);
       while ( counter_string.length() < 10) {
@@ -356,7 +356,8 @@ void loop() {
 
 // Disable temperature callibration (note lower case "d")            
                else if ( _x == 'd') { 
-                    WriteEEAutoTempCal(true);
+                    WriteEEAutoTempCal(false);
+                    sqm.resetTemperature();
                     Serial.println("zdaL");                        
                }
 

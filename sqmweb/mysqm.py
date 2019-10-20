@@ -88,7 +88,31 @@ class  MySQM:
 
 # Read OLED status
     def read_oled_status(self):
-        self.sqm.send('A5x\r')
+        self.sqm.send('A5x\n')
         return self.sqm.recv()
+        
+# Disable OLED in usb mode
+    def disable_oled(self)
+        self.sqm.send('A50x\n')        
+        return self.sqm.recv()
+                                  
+# Enable OLED in usb mode
+    def enable_oled(self)
+        self.sqm.send('A51x\n') 
+        return self.sqm.recv()
+
+# Disable OLED dimmer (Auto contras)
+    def disable_dimmer(self)
+        self.sqm.send('A5dx\n') 
+        return self.sqm.recv()
+
+# Enable OLED dimmer (Auto cotrass)
+    def enable_dimmer(self)
+        self.sqm.send('A5ex\n') 
+        return self.sqm.recv()
+
+
+
+
 
 
