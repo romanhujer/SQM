@@ -50,7 +50,7 @@ class tty:
 
     def send(self, ss):
         if self.debug == 1: 
-            print('Requet:', ss)
+            print('Request:', ss)
         self.ser.write(ss)
 
     def recv(self):
