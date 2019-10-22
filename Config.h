@@ -9,7 +9,7 @@
 #define SERIAL_BAUD 115200    //Serial port baud Default is 115200
 
 // Select only one your display
-#define SH1106_ON   // SH1106  1.3"  128x64 OLED display is default
+#define SH1106_ON  // SH1106  1.3"  128x64 OLED display is default
 #define SSD1306_OFF // SSD1306 0.96" 128x64 OLED display 
 
 #define EXTENDET_PROTOCOL_ON  // My Extender protocol for weather info (Disable when is project compilation Big)

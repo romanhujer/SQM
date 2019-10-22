@@ -28,8 +28,8 @@
   Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 
 */
-#define Version "1.0.7"
-#define SERIAL_NUMBER "20191021"
+#define Version "1.0.8"
+#define SERIAL_NUMBER "20191022"
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
@@ -235,12 +235,11 @@ void loop() {
       } else if ( command.equals("r")) { 
 
          Serial.println("r," + sqm_string 
-//                      + "m,0000002591Hz," 
                         + "m,0000000000Hz," 
                         + counter_string 
                         + "c,0000000.000s," 
                         + temp_string +'C');
-#ifndef SSD1306_ON
+//#ifndef SSD1306_ON
 // Unaveraged reading request
       } else if (command.equals("u")) { 
          Serial.println("u," + sqm_string 
@@ -249,7 +248,7 @@ void loop() {
                         + "c,0000000.000s," 
                         + temp_string +'C');
 
-#endif
+//#endif
 #ifdef EXTENDET_PROTOCOL_ON
 
 // My extension request for weather information
@@ -262,10 +261,11 @@ void loop() {
         while ( vis_string.length() < 5) { 
           vis_string = '0' + vis_string;
         }
-        String f_string = String(sqm.full);
+/*        String f_string = String(sqm.full);
         while ( f_string.length() < 5) { 
           f_string = '0' + f_string;
         }
+*/        
         String hum_string = String(int(hum));
         while ( hum_string.length() < 3) { 
           hum_string = '0' + hum_string;
@@ -276,9 +276,10 @@ void loop() {
        }
        Serial.println("w," + sqm_string + "m,"
                           + String(sqm.dmpsas, 2) + "e,"
-                          + f_string + "f,"
+//                          + f_string + "f,"
                           + ir_string + "i,"
-                          + vis_string + "v,"                          
+                          + vis_string + "v,"
+                          + counter_string +"c,"                         
                           + hum_string + "h,"
                           + pres_string + "p,"
                           + temp_string + 'C');
