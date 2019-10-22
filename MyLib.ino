@@ -140,15 +140,18 @@ void DisplSqm(  double mpsas, double dmpsas, int temp, byte hum , int pres, char
     _blk_change_status();
  }
 
-void DisplWaitUSB (char blk)  {
+void DisplWait(char blk)  {
     OledDisp.setContrast(ReadEEcontras());
     if (page != 4) {
       OledDisp.clear();
       buzzer(200);
     }
     page=4;
-    OledDisp.setCursor(0, 2);
-    OledDisp.print("Wait USB data ");
+    OledDisp.setCursor(0, 3);
+    if ( blk == '#') 
+       OledDisp.print("Wait first data");
+    else 
+       OledDisp.print("Wait USB data ");
     OledDisp.print(Blik ? blk : ' ' );
     _blk_change_status();
 }

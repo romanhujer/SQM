@@ -29,7 +29,7 @@
 
 */
 #define Version "1.0.7"
-#define SERIAL_NUMBER "20191020"
+#define SERIAL_NUMBER "20191021"
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
@@ -90,7 +90,7 @@ void setup() {
         bme.writeOversamplingHumidity(BMx280MI::OSRS_H_x16);
      } else {
         Humidity = false;
-        BME_Msg =  "no Humidity";        
+        BME_Msg =  "no Humidity";                            
      }
   } else {
 
@@ -149,7 +149,7 @@ if ( OledDisp.begin()) {
    
    DisplCalData();      
    delay(1500); // Pause for 1 seconds
-
+   DisplWait('#');
 } // end of Setup
 
 //=======================================================================================
@@ -190,7 +190,7 @@ void loop() {
 // USB mode 
 // ======================================================
     if (!SerialOK) {
-      DisplWaitUSB('@');
+      DisplWait('@');
       delay(50);
     }
      while ( Serial.available()) {       
