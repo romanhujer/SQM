@@ -5,7 +5,7 @@ Python library
 
 ### mysqm.py
 
-python class  tty and mysqm
+python class  tty and MySQM
 
 
 ### test.py
