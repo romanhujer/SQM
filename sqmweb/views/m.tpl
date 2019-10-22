@@ -50,14 +50,12 @@ var now = new Date();
           +pad(now.getUTCSeconds().toString(),2); 
 </script>
 <br /><br />
-
-&nbsp;&nbsp;RAW data: <font class='c'>{{sqm_data}}</font><br />
-<br />
-&nbsp;&nbsp;SQM: <font class='c'>10.0</font> Mag/Arc-Sec<br />
-&nbsp;&nbsp;Temperature: <font class='c'>10.0</font>&deg;C<br />
-&nbsp;&nbsp;Barometric Pressure: <font class='c'>1010.0</font>hPa<br />
-&nbsp;&nbsp;Relative Humidity: <font class='c'>70.0</font>%<br />
-&nbsp;&nbsp;Dew Point Temperature: <font class='c'>4.0</font>&deg;C<br />
+&nbsp;&nbsp;SQM: <font class='c'>{{mpsas}}&#xb1;{{dmpsas}} </font> Mag/Arc&#xb2;Sec<br />
+&nbsp;&nbsp;Temperature: <font class='c'>{{temperature}}</font>&deg;C<br />
+&nbsp;&nbsp;Barometric Pressure: <font class='c'>{{pressure}}</font>hPa<br />
+&nbsp;&nbsp;Relative Humidity: <font class='c'>{{humidity}}</font>%<br />
+&nbsp;&nbsp;Dew Point Temperature: <font class='c'>{{devpoint}} </font>&deg;C<br />
+&nbsp;&nbsp;Count: <font class='c'>{{count}}</font><br />
 <br />
 </div>
 <br />

@@ -20,18 +20,6 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 <div class='b'>
 <br />
 <div style='width: 40em;'>
-&nbsp;&nbsp;Time:<span id='datetime'></span> UT (web browser) 
-<script> 
-function pad(num, size) { var s = '000000000' + num; return s.substr(s.length-size); }
-var now = new Date(); 
-          document.getElementById('datetime').innerHTML = (now.getUTCMonth()+1)+'/'
-          +pad(now.getUTCDate().toString(),2)+'/'
-          +pad(now.getUTCFullYear().toString().substr(-2),2)+ ' '
-          +pad(now.getUTCHours().toString(),2)+':'
-          +pad(now.getUTCMinutes().toString(),2)+':'
-          +pad(now.getUTCSeconds().toString(),2); 
-</script>
-<br />
 <br />
 &nbsp;&nbsp;Sky quality: <font class='c'>{{mpsas}}&#xb1;{{dmpsas}} </font> Mag/Arc&#xb2;Sec<br />
 &nbsp;&nbsp;Temperature: <font class='c'>{{temperature}}</font>&deg;C<br />
@@ -42,8 +30,8 @@ var now = new Date();
 <br />
 </div>
 <br />
-<a href='/'style='background-color: #552222;'>Home</a>
-<a href='/info'>Box Info</a>
-<a href='/config' >Configuration</a>
+<a href='/'>Home</a>
+<a href='/info' tyle='background-color: #552222;'>Box Info</a>
+<a href='/config'>Configuration</a>
 </body>
 </html>
