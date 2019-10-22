@@ -8,4 +8,4 @@ x.*
 X.*
 *.pyc
 __pycache__
-
+*.swp
