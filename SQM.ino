@@ -29,7 +29,7 @@
 
 */
 #define Version "1.0.8"
-#define SERIAL_NUMBER "20191022"
+#define SERIAL_NUMBER "20191023"
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
@@ -279,7 +279,8 @@ void loop() {
 //                          + f_string + "f,"
                           + ir_string + "i,"
                           + vis_string + "v,"
-                          + counter_string +"c,"                         
+                          + counter_string +"c,"
+                          + oled + ',' 
                           + hum_string + "h,"
                           + pres_string + "p,"
                           + temp_string + 'C');

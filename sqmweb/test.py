@@ -28,9 +28,9 @@ def main():
     mpsas       =  float(s[1].split('m')[0])
     dmpsas      = float(s[2].split('e')[0])
     count       = long(s[5].split('c')[0])
-    humidity    = int(s[6].split('h')[0])
-    pressure    = int(s[7].split('p')[0])
-    temperature = float(s[8].split('C')[0])
+    humidity    = int(s[8].split('h')[0])
+    pressure    = int(s[9].split('p')[0])
+    temperature = float(s[10].split('C')[0])
     devpoint    = round(243.04 * (math.log(humidity/100.0) +
                                 ((17.625 * temperature)/(243.04 + temperature))) /
                       (17.625 - math.log(humidity/100.0) -

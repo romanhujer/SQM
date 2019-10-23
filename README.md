@@ -27,7 +27,7 @@ or
 
 #### Read extension data with weather informations (is my extension)
 * Request: wx  
-* Response: w, 11.87m,0.04e,00121i,00834v,0000000002c,040h,0952p, 026.1C
+* Response: w, 11.87m,0.04e,00121i,00834v,0000000002c,A5,11,040h,0952p, 026.1C
  
 #### Read config data  
 * Request:  gx
