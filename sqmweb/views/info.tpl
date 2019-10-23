@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="10; URL=/">
-  <link rel="stylesheet" href="static/main.css" >
+<!--  <meta http-equiv="refresh" content="10; URL=/"> -->
+  <link rel="stylesheet" href="static/my.css" >
 </head>
 
 <title>SQM Web Manager</title>
@@ -18,20 +18,33 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 </table>
 </div >
 <div class='b'>
-<br />
 <div style='width: 40em;'>
+<b>BOX INFO</b><br />
 <br />
-&nbsp;&nbsp;Sky quality: <font class='c'>{{mpsas}}&#xb1;{{dmpsas}} </font> Mag/Arc&#xb2;Sec<br />
-&nbsp;&nbsp;Temperature: <font class='c'>{{temperature}}</font>&deg;C<br />
-&nbsp;&nbsp;Barometric Pressure: <font class='c'>{{pressure}}</font>hPa<br />
-&nbsp;&nbsp;Relative Humidity: <font class='c'>{{humidity}}</font>%<br />
-&nbsp;&nbsp;Dew Point Temperature: <font class='c'>{{devpoint}} </font>&deg;C<br />
-&nbsp;&nbsp;Count: <font class='c'>{{count}}</font><br />
+&nbsp;&nbsp;Serial &nbsp; : <font class='c'>{{serial}}</font><br />
+&nbsp;&nbsp;Protokol: <font class='c'>{{protokol}}</font><br />
+&nbsp;&nbsp;Model &nbsp;&nbsp;: <font class='c'>{{model}}</font><br />
+&nbsp;&nbsp;Feature : <font class='c'>{{feature}}</font><br />
+<br />
+<br />
+<b>CALIBRATION</b><br />
+<br />
+&nbsp;&nbsp;Temperature calibration : <font class='c'>{{tc}}</font><br />
+&nbsp;&nbsp;Sky quality offset : <font class='c'>{{moffset}}</font> Mag/Arc&#xb2;Sec<br />
+&nbsp;&nbsp;Temperature offset : <font class='c'>{{toffset}}</font>&deg;C<br />
+<br />
+<br />
+<b>OLED DISPLAY</b><br />
+<br />
+&nbsp;&nbsp;Oled display is : <font class='c'>{{oled}}</font><br />
+&nbsp;&nbsp;Auto dimmer is : <font class='c'>{{dimmer}}</font><br />
+&nbsp;&nbsp;Default contras : <font class='c'>{{contras}}</font><br />
+ 
 <br />
 </div>
 <br />
 <a href='/'>Home</a>
-<a href='/info' tyle='background-color: #552222;'>Box Info</a>
+<a href='/info' style='background-color: #552222;'>Box Info</a>
 <a href='/config'>Configuration</a>
 </body>
 </html>
