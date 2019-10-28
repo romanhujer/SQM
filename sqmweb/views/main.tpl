@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="10; URL=/">
+  <meta http-equiv="refresh" content="60; URL=/main">
   <link rel="stylesheet" href="static/my.css" >
 </head>
 
@@ -50,9 +50,23 @@ var now = new Date();
 &nbsp;&nbsp;Vis: <font class='c'>{{vis}}</font><br />
 &nbsp;&nbsp;Ir : <font class='c'>{{ir}}</font><br />
 <br />
+
+
+<form action='/main' method='POST'>
+<input type="hidden" name="id" value="oled">
+&nbsp;&nbsp; OLED Display is:
+%if oled == '1':
+  <input type="hidden"  name="sled" value=0>
+  <font class='c'>ON &nbsp; </font> &nbsp; <input type="submit" value="OFF">
+%else:
+  <input type="hidden"  name="sled" value=1>
+  <font class='c'>OFF</font> &nbsp; <input type="submit" value="ON">
+%end
+</form>
+
 </div>
 <br />
-<a href='/'style='background-color: #552222;'>Home</a>
+<a href='/main'style='background-color: #552222;'>Home</a>
 <a href='/info'>Box Info</a>
 <a href='/config' >Configuration</a>
 </body>

@@ -1,8 +1,9 @@
+od ??? po ???END mohou být vložené/smazané řádky
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="60; URL=/main">
+<!--  <meta http-equiv="refresh" content="10; URL=/"> -->
   <link rel="stylesheet" href="static/my.css" >
 </head>
 
@@ -36,39 +37,35 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 <br />
 <b>OLED DISPLAY</b><br />
 <br />
-<form action="/info" method="POST">
-<input type="hidden"  name="id" value="oled">
-&nbsp;&nbsp; OLED Display is:&nbsp;
+&nbsp;&nbsp; OLED Display is:
+<form action="/info" method="POST" id="oled">
 %if oled == 'On':
   <input type="hidden"  name="sled" value=0>
-  <font class='c'>ON &nbsp;&nbsp;</font> &nbsp; <input type="submit" value="OFF">
+  <font class='c'>ON &nbsp; </font> &nbsp; <input type="submit" value="OFF">
 %else:
   <input type="hidden"  name="sled" value=1>
-  <font class='c'>OFF</font> &nbsp;&nbsp; <input type="submit" value="ON">
+  <font class='c'>OFF</font> &nbsp; <input type="submit" value="ON">
 %end
 </form>
-<form action="/info" method="POST">
-<input type="hidden"  name="id" value="dimmer">
-&nbsp;&nbsp; Auto dimmer is &nbsp; :&nbsp;
+<br />
+<form action="/info" method="POST" id="dimmer">
+Auto dimmer is :
 %if dimmer == 'On':
-  <input type="hidden"  name="sdimmer" value=0>
-  <font class='c'>ON &nbsp;&nbsp;</font> &nbsp; <input type="submit" value="OFF">
+<input type="hidden"  name="sdimmer" value=0>
+<font class='c'>ON &nbsp; </font> &nbsp; <input type="submit" value="OFF">
 %else:
-  <input type="hidden"  name="sdimmer" value=1>
-  <font class='c'>OFF</font>  &nbsp;&nbsp; <input type="submit" value="ON">
+<input type="hidden"  name="sdimmer" value=1>
+<font class='c'>OFF</font> &nbsp; <input type="submit" value="ON">
 %end
-</form>
-<form action="/info" method="POST">
-<input type="hidden"  name="id" value="contras">
-&nbsp;&nbsp;Display contras : 
-<font class='c'><input type="number" min=0 max=255  name="scontras" value="{{contras}}"</input></font>
-<input type="submit" value="Set">
-</form >
+<br />
+
+&nbsp;&nbsp;Default contras : <font class='c'>{{contras}}</font><br />
 <br />
 </div>
 <br />
-<a href='/main'>Home</a>
+<a href='/'>Home</a>
 <a href='/info' style='background-color: #552222;'>Box Info</a>
 <a href='/config'>Configuration</a>
 </body>
 </html>
+???KONEC
