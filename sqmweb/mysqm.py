@@ -32,7 +32,9 @@
 import sys
 import serial 
 
-
+#
+# Serial port operation
+#
 class tty:
 
     def __init__(self, port = '/dev/ttyUSB0', baud=115200, timeout=2):
@@ -60,15 +62,31 @@ class tty:
         self.ser.close()
 
 
+# MySQM extension protokol
 class  MySQM:
 
-    def __init__(self, port='/dev/ttyUSB0', debug=0  ):    
-        self.sqm = tty(port); 
-        if debug == 1:
-            self.sqm.debug = 1
-        self.sqm.open()
-        self.sqm.debug = debug
+    def __init__(self, port='/dev/ttyUSB0', open=0, debug=0):    
+        self.debug = debug 
+        self.open_ser = 0
+        if open == 1:
+            self.open_serial(port)
 
+# Open serial port    
+    def open_serial(self, port='/dev/ttyUSB0'):
+        if self.open_ser == 0:
+            self.sqm = tty(port) 
+            self.sqm.debug = self.debug
+            self.sqm.open()
+            self.open_ser=1
+        else:
+            print ('Serial is port alredy open!')
+
+# Close serial port
+    def close_serial(self): 
+        if self.open_ser == 1:
+            self.sqm.close()
+            self.open_ser=0
+         
 # Read box info 
     def read_device_info(self):    
         self.sqm.send('ix')
@@ -155,4 +173,8 @@ class  MySQM:
         return self.sqm.recv()
 
 
+# Original Unihedrom protokol
+class UnihedronSQM:
+    def __init__(self, port='/dev/ttyUSB0', open=0, debug=0):
+        self.debug = debug
 

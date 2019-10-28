@@ -6,7 +6,7 @@
 import time 
 import mysqm
 
-sqm = mysqm.MySQM('/dev/ttyUSB0',1)
+sqm = mysqm.MySQM('/dev/ttyUSB0',1,1)
 sqm.debug = 1
 
 print('Read box info')

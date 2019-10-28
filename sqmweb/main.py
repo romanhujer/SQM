@@ -2,7 +2,7 @@
 #
 #   main.py   Sky Quality Meter web manager 
 #
-#   Version 1.0
+#   Version 1.0a
 #
 #   Copyright (c) 2019 Roman Hujer   http://hujer.net
 #
@@ -86,15 +86,27 @@ else:
     app = default_app()
     logging.info('using Apache web server')
 
-sqm = mysqm.MySQM(args.com) 
+#
+serial_port = args.com
 
+#
+# Init MySQM class default is com open and debug off
+#
+sqm = mysqm.MySQM(serial_port,0,0) 
 
 
 #
 # Web pages rendering
 #
+def init_page():
+    return template( os.path.join(views_path, 'init.tpl'),
+                     com  = serial_port
+                   )
+
 
 def main_page():
+    if sqm.open_ser == 0: 
+        return init_page()
     s = sqm.read_sqm_weather().split(',')
     mpsas       = float(s[1].split('m')[0])
     dmpsas      = float(s[2].split('e')[0])
@@ -207,16 +219,34 @@ def get_favicon():
     """Serve favicon"""
     return static_file('favicon.ico', root=views_path)
 
+@app.route('/init')
+def init(): 
+    """init page"""
+    return init_page()
+
+@app.route('/init', method='POST')
+def do_init():
+    """init page"""
+    form_id=request.forms.get('id')
+    if form_id == 'com':
+        scom=request.forms.get('scom')
+        print scom        
+        if sqm.open_ser == 1:
+           sqm.close_serial() 
+        sqm.open_serial(scom)
+    return main_page()
+
 @app.route('/')
 @app.route('/main')
 def main(): 
     """main page"""
-    return main_page()
+    if sqm.open_ser == 1:
+        return main_page()
+    return init_page()
 
 @app.route('/main', method='POST') 
 def do_main():
     oled_off = int(request.forms.get('sled'))
-#    print oled_off
     if oled_off == 0:
       sqm.disable_oled()
     elif  oled_off == 1:
@@ -262,10 +292,8 @@ def config():
 def do_config():
     """config page"""
     form_id=request.forms.get('id')
-#    print form_id
     if form_id == 'tc':
         tc_yes = int(request.forms.get('stc'))
-#       print tc_yes
         if tc_yes == 1:
             sqm.enable_sqm_temp_cal()
         elif tc_yes == 0: 

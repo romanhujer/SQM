@@ -6,6 +6,7 @@ bottle.py
 old*.*
 x.*
 X.*
+test.*
 *.pyc
 __pycache__
 *.swp
