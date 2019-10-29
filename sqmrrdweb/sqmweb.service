@@ -1,0 +1,14 @@
+[Unit]
+Description=SQM Web Manager
+After=multi-user.target
+
+[Service]
+Type=idle
+# MUST SET YOUR USERNAME HERE.
+User=pi
+ExecStart=/home/pi/sqmweb/sqm_start.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
