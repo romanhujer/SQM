@@ -2,7 +2,7 @@
 #
 #   main.py   Sky Quality Meter web manager 
 #
-#   Version 1.0b
+#   Version 1.0a
 #
 #   Copyright (c) 2019 Roman Hujer   http://hujer.net
 #
@@ -37,8 +37,11 @@ import time
 import logging 
 import argparse
 import math
-
+import thread
 import mysqm
+import sqmrrd
+import time 
+
 
 
 from bottle import Bottle, route, run, template, static_file, get, post, request
@@ -49,12 +52,17 @@ views_path ='views'
 #pkg_path, _ = os.path.split(os.path.abspath(__file__))
 #views_path = os.path.join(pkg_path, 'views')
 
+
+
 # default settings
 
 WEB_HOST = '0.0.0.0'
 WEB_PORT = 8080
 COM_PORT = '/dev/ttyUSB0'
 
+debug = 1
+
+lock_serial_port = 0
 
 parser = argparse.ArgumentParser(
     description='SQM web manager.'
@@ -87,10 +95,38 @@ else:
 #
 serial_port = args.com
 
+
+
+# 
+#  Create new rrd database
 #
-# Init MySQM class default is com open and debug off
+def new_rrd_database():
+    sqmr.create_database()
+
+def sqm_daemon():
+    while 1 :
+        if  sqmr.lock_serial == 1 : 
+           if sqmr.debug == 1:
+               print "sqm_daemon() serial port is lock"
+               time.sleep(1)
+           continue
+        sqmr.read_sqm_current_data()
+        time.sleep(20)
+
+
 #
-sqm = mysqm.MySQM(serial_port,0,0) 
+# Init MySQM class defaut is com open and debug off
+#
+sqm = mysqm.MySQM(serial_port,1,0) 
+#
+# Init MySQMMrrd class
+#
+
+sqmr = sqmrrd.MySQMrrd(port=serial_port, database='data/sqm.rrd', debug=1 )
+
+print "SQM daemon starting"  
+thread.start_new_thread( sqm_daemon,() )
+print "OK"
 
 
 #
@@ -105,34 +141,19 @@ def init_page():
 def main_page():
     if sqm.open_ser == 0: 
         return init_page()
-    s = sqm.read_sqm_weather().split(',')
-    mpsas       = float(s[1].split('m')[0])
-    dmpsas      = float(s[2].split('e')[0])
-    ir          = int(s[3].split('i')[0]) 
-    vis         = int(s[4].split('v')[0]) 
-    full        = vis + ir
-    count       = long(s[5].split('c')[0])
-    oled        = int(s[7][0:1])
-    humidity    = int(s[8].split('h')[0])
-    pressure    = int(s[9].split('p')[0])
-    temperature = float(s[10].split('C')[0])
-    devpoint    = round(243.04 * (math.log(humidity/100.0) +
-                                ((17.625 * temperature)/(243.04 + temperature))) /
-                       (17.625 - math.log(humidity/100.0) -
-                                ((17.625 * temperature)/(243.04 + temperature))),1)
-
+    sqmr.generate_graph()   
     return template( os.path.join(views_path, 'main.tpl'), 
-                        mpsas       = '%5.2f' % mpsas, 
-                        dmpsas      = '%4.2f' % dmpsas,
-                        ir          = '%04d' % ir,
-                        vis         = '%04d' % vis, 
-                        full        = '%04d' % full, 
-                        count       = '%d' % count,
-                        oled        = '%d' % oled,
-                        humidity    = '%3d' % humidity, 
-                        pressure    = '%4d' % pressure,
-                        temperature = '%4.1f' % temperature,
-                        devpoint    = '%4.1f' % devpoint 
+                        mpsas       = '%5.2f' % sqmr.mpsas, 
+                        dmpsas      = '%4.2f' % sqmr.dmpsas,
+                        ir          = '%04d' % sqmr.ir,
+                        vis         = '%04d' % sqmr.vis, 
+                        full        = '%04d' % sqmr.full, 
+                        count       = '%d' % sqmr.count,
+                        oled        = '%d' % sqmr.oled,
+                        humidity    = '%3d' % sqmr.humidity, 
+                        pressure    = '%4d' % sqmr.pressure,
+                        temperature = '%4.1f' % sqmr.temperature,
+                        devpoint    = '%4.1f' % sqmr.devpoint 
                     )
  
 def info_page():
@@ -147,7 +168,13 @@ def info_page():
             return 'Yes'
         else: 
             return 'No'
+    while sqmr.lock_serial == 1 :
+        if debug == 1 :
+            print "info_page() serial port si lock"
+            time.sleep(1)
+    sqmr.lock_serial = 1
     s = sqm.read_device_info().split(',')
+    sqmr.lock_serial = 0
     protokol = long(s[1])
     model    = long(s[2])
     feature  = long(s[3])
@@ -174,12 +201,24 @@ def info_page():
 
 
 def config_page():
+    def _on_off(c):
+        if (c == 1 ):
+            return 'On'
+        else:
+            return 'Off'
+    
     def _yes_no(c):
         if (c == 'Y'):
             return 'Yes'
         else: 
             return 'No'
+    while sqmr.lock_serial == 1 :
+        if debug == 1:
+            print "config_page() serial is lock"
+            time.sleep(1)
+    sqmr.lock_serial = 1
     s = sqm.read_config().split(',')
+    sqmr.lock_serial = 0
     m_offset = float(s[1].split('m')[0])
     t_offest = float(s[2].split('C')[0])
     tc       = s[3].split(':')[1]
@@ -191,7 +230,10 @@ def config_page():
                         moffset_s  = '%6.2f' % m_offset,
                         toffset  =  t_offest,
                         toffset_s  = '%5.1f' % t_offest,
-                        tc       = _yes_no(tc)
+                        tc       = _yes_no(tc),
+                        oled     = _on_off(oled),
+                        dimmer   = _on_off(dimmer),
+                        contras  = '%d' % contras
                     )
 
 #
@@ -236,10 +278,16 @@ def main():
 @app.route('/main', method='POST') 
 def do_main():
     oled_off = int(request.forms.get('sled'))
+    while sqmr.lock_serial == 1 :
+       if debug == 1 :
+         print "do_main() Serial is lock"
+         time.sleep(1)     
+    sqmr.lock_serial = 1
     if oled_off == 0:
       sqm.disable_oled()
     elif  oled_off == 1:
       sqm.enable_oled()
+    sqmr.lock_serial = 0  
     return main_page()
 
 @app.route('/info')
@@ -251,24 +299,26 @@ def info():
 def do_info():
     """info page"""
     form_id=request.forms.get('id')
-
+    while sqmr.lock_serial == 1 :
+       if debug == 1 :
+         print "do_info() Serial is lock"
+         time.sleep(1)
+    sqmr.lock_serial = 1      
     if form_id == 'oled':
         oled_off = int(request.forms.get('sled'))
         if oled_off == 0:
             sqm.disable_oled()
         elif  oled_off == 1:
             sqm.enable_oled()
-
     if form_id == 'dimmer': 
         dimmer_off=int(request.forms.get('sdimmer'))
         if dimmer_off == 0:
             sqm.disable_dimmer()
         elif dimmer_off == 1:
             sqm.enable_dimmer()
-
     if form_id == 'contras':
         sqm.set_oled_contras(int(request.forms.get('scontras')))
-
+    sqmr.lock_serial = 0
     return info_page()
 
  
@@ -282,22 +332,41 @@ def config():
 def do_config():
     """config page"""
     form_id=request.forms.get('id')
+    while sqmr.lock_serial == 1 :
+        if debug == 1 :
+            print "do_config() Serial is lock "
+            time.sleep(1)
+    sqmr.lock_serial = 1
+    
     if form_id == 'tc':
         tc_yes = int(request.forms.get('stc'))
         if tc_yes == 1:
             sqm.enable_sqm_temp_cal()
         elif tc_yes == 0: 
             sqm.disable_sqm_temp_cal()
-
+    
     if form_id == 'moffset':
         sqm.set_sqm_offset(float(request.forms.get('smoffset')))
 
     if form_id == 'toffset':
         sqm.set_temp_offset(float(request.forms.get('stoffset')))
 
-    if form_id == 'reset':
-       if int(request.forms.get('sreset'))  == 4826157:
-           sqm.set_EEPROM_default_vaule()
+    if form_id == 'oled':
+        oled_off = int(request.forms.get('sled'))
+        if oled_off == 0:
+            sqm.disable_oled()
+        elif  oled_off == 1:
+            sqm.enable_oled()
+    if form_id == 'dimmer':
+        dimmer_off=int(request.forms.get('sdimmer'))
+        if dimmer_off == 0:
+            sqm.disable_dimmer()
+        elif dimmer_off == 1:
+           sqm.enable_dimmer()
+
+    if form_id == 'contras':
+        sqm.set_oled_contras(int(request.forms.get('scontras')))
+    sqmr.lock_serial = 0
     return config_page()
 
 
