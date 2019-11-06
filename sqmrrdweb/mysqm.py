@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 #   MySQM.py   Sky Quality Meter class lib
 #
@@ -77,7 +78,7 @@ class  MySQM:
             self.sqm = tty(port) 
             self.sqm.debug = self.debug
             self.sqm.open()
-            self.open_ser=1
+            self.open_ser = 1
         else:
             print ('Serial is port alredy open!')
 
@@ -86,6 +87,7 @@ class  MySQM:
         if self.open_ser == 1:
             self.sqm.close()
             self.open_ser=0
+        self.open_ser = 0
          
 # Read box info 
     def read_device_info(self):    

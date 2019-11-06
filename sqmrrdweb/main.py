@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 #   main.py   Sky Quality Meter web manager 
 #
@@ -37,7 +38,9 @@ import time
 import logging 
 import argparse
 import math
-import thread
+import sys 
+import trace 
+import threading 
 import mysqm
 import sqmrrd
 import time 
@@ -60,9 +63,11 @@ WEB_HOST = '0.0.0.0'
 WEB_PORT = 8080
 COM_PORT = '/dev/ttyUSB0'
 
+
 debug = 1
 
 lock_serial_port = 0
+rrd_database='data/sqm.rrd'
 
 parser = argparse.ArgumentParser(
     description='SQM web manager.'
@@ -103,29 +108,72 @@ serial_port = args.com
 def new_rrd_database():
     sqmr.create_database()
 
-def sqm_daemon():
-    while 1 :
-        if  sqmr.lock_serial == 1 : 
-           if sqmr.debug == 1:
-               print "sqm_daemon() serial port is lock"
-               time.sleep(1)
-           continue
-        sqmr.read_sqm_current_data()
-        time.sleep(20)
 
+class sqmThread(threading.Thread):
+  def __init__(self, *args, **keywords): 
+    threading.Thread.__init__(self, *args, **keywords) 
+    self.killed = False
+  
+  def start(self): 
+    self.__run_backup = self.run 
+    self.run = self.__run       
+    threading.Thread.start(self) 
+  
+  def __run(self): 
+    sys.settrace(self.globaltrace) 
+    self.__run_backup() 
+    self.run = self.__run_backup 
+  
+  def globaltrace(self, frame, event, arg): 
+    if event == 'call': 
+      return self.localtrace 
+    else: 
+      return None
+  
+  def localtrace(self, frame, event, arg): 
+    if self.killed: 
+      if event == 'line': 
+        raise SystemExit() 
+    return self.localtrace 
+  
+  def kill(self): 
+    self.killed = True
+
+
+def sqm_daemon():
+    while True :
+       if sqmr.sqm.open_ser == 1 :
+            if  sqmr.lock_serial == 1 : 
+                if sqmr.debug == 1:
+                    print "sqm_daemon() serial port is lock"
+                    time.sleep(1)
+                continue
+            sqmr.read_sqm_current_data()
+            time.sleep(15)
+       else:
+            print "sqm_daemon() wiat serial port open" 
+            time.sleep(1)
 
 #
 # Init MySQM class defaut is com open and debug off
 #
-sqm = mysqm.MySQM(serial_port,1,0) 
+sqm = mysqm.MySQM(port=serial_port,debug=debug) 
 #
 # Init MySQMMrrd class
 #
+sqmr = sqmrrd.MySQMrrd(port=serial_port, database=rrd_database, debug=debug )
 
-sqmr = sqmrrd.MySQMrrd(port=serial_port, database='data/sqm.rrd', debug=1 )
+if  not os.path.exists(rrd_database) :
+    print "Create new rrd database"
+    new_rrd_database()
+
+
 
 print "SQM daemon starting"  
-thread.start_new_thread( sqm_daemon,() )
+# thread.start_new_thread( sqm_daemon,() )
+sqmt = sqmThread(target=sqm_daemon)
+sqmt.start()
+
 print "OK"
 
 
@@ -261,10 +309,21 @@ def do_init():
     form_id=request.forms.get('id')
     if form_id == 'com':
         scom=request.forms.get('scom')
-        print scom        
+        print scom       
+#        sqmt.kill()
+        if sqmr.sqm.open_ser == 1:
+           sqmr.stop_serial() 
         if sqm.open_ser == 1:
            sqm.close_serial() 
+        print "Open serial"   
         sqm.open_serial(scom)
+        sqmr.start_serial(scom)
+#        print "start deamon"
+#        sqmt.start()
+        while not sqmr.first_data :
+            if debug : 
+                print "do_init() wait fist data" 
+                time.sleep(1)
     return main_page()
 
 @app.route('/')
