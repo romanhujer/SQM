@@ -32,7 +32,6 @@
 #  Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 #
 
-
 import os
 import time
 import logging 
@@ -45,14 +44,13 @@ import mysqm
 import sqmrrd
 import time 
 
-
-
 from bottle import Bottle, route, run, template, static_file, get, post, request
 
 
 views_path ='views' 
 
-#pkg_path, _ = os.path.split(os.path.abspath(__file__))
+pkg_path = os.path.split(os.path.abspath(__file__))
+print pkg_path
 #views_path = os.path.join(pkg_path, 'views')
 
 
@@ -63,15 +61,16 @@ WEB_HOST = '0.0.0.0'
 WEB_PORT = 8080
 COM_PORT = '/dev/ttyUSB0'
 
+daemon_exit_flag = False
+lock_serial_port = False 
 
-debug = 1
+debug = True
 
-lock_serial_port = 0
+
 rrd_database='data/sqm.rrd'
 
-parser = argparse.ArgumentParser(
-    description='SQM web manager.'
-    'A simple web application to manage SQM')
+parser = argparse.ArgumentParser(description='SQM web manager.'
+                                'A simple web application to manage SQM')
 
 parser.add_argument('--port', '-P', type=int, default=WEB_PORT,
                     help='web server port (default: %d)' % WEB_PORT)
@@ -82,77 +81,57 @@ parser.add_argument('--com', '-c', default=COM_PORT,
 parser.add_argument('--verbose', '-v', action='store_true',
                     help='print more messages')
 parser.add_argument('--logfile', '-l', help='log file name')
-parser.add_argument('--server', '-s', default='standalone',
-                    help='http server [standalone|apache] (default: standalone')
 
 args = parser.parse_args()
 
 logging.debug("command line arguments: " + str(vars(args)))
 
 
-if args.server == 'standalone':
-    app = Bottle()
-    logging.info('using Bottle as standalone server')
-else:
-    app = default_app()
-    logging.info('using Apache web server')
+app = Bottle()
+logging.info('using Bottle as standalone server')
 
 #
 serial_port = args.com
 
 
-
 # 
-#  Create new rrd database
+#  Define sqm Thread daemon
 #
-def new_rrd_database():
-    sqmr.create_database()
-
-
 class sqmThread(threading.Thread):
-  def __init__(self, *args, **keywords): 
-    threading.Thread.__init__(self, *args, **keywords) 
-    self.killed = False
+  def __init__(self, name): 
+    threading.Thread.__init__(self) 
+    self.name = name
+    daemon_exit_flag = False
   
-  def start(self): 
-    self.__run_backup = self.run 
-    self.run = self.__run       
-    threading.Thread.start(self) 
-  
-  def __run(self): 
-    sys.settrace(self.globaltrace) 
-    self.__run_backup() 
-    self.run = self.__run_backup 
-  
-  def globaltrace(self, frame, event, arg): 
-    if event == 'call': 
-      return self.localtrace 
-    else: 
-      return None
-  
-  def localtrace(self, frame, event, arg): 
-    if self.killed: 
-      if event == 'line': 
-        raise SystemExit() 
-    return self.localtrace 
-  
-  def kill(self): 
-    self.killed = True
+  def run(self): 
+    print "Thread Starting" + self.name
+    sqm_daemon(self.name)
+    print "Thread Stop" + self.name
 
+  def stop(self): 
+    daemon_exit_flag = True
 
-def sqm_daemon():
-    while True :
-       if sqmr.sqm.open_ser == 1 :
-            if  sqmr.lock_serial == 1 : 
-                if sqmr.debug == 1:
-                    print "sqm_daemon() serial port is lock"
-                    time.sleep(1)
-                continue
-            sqmr.read_sqm_current_data()
-            time.sleep(15)
-       else:
+def sqm_daemon(threadName): 
+    daemon_exit_flag = False
+    while not daemon_exit_flag:
+      try:         
+        if myrrd.sqm.open_ser :
+             if  myrrd.lock_serial : 
+                    if myrrd.debug :
+                        print "sqm_daemon() serial port is lock"
+                        time.sleep(1)
+                    continue
+             myrrd.read_sqm_current_data()
+             time.sleep(15)
+        else:
             print "sqm_daemon() wiat serial port open" 
             time.sleep(1)
+      except:
+         print "sqm_daemon() Serial port error"
+         myrrd.sqm.open_ser = False
+         myrrd.lock_serial = False
+    threadName.exit()
+     
 
 #
 # Init MySQM class defaut is com open and debug off
@@ -161,19 +140,18 @@ sqm = mysqm.MySQM(port=serial_port,debug=debug)
 #
 # Init MySQMMrrd class
 #
-sqmr = sqmrrd.MySQMrrd(port=serial_port, database=rrd_database, debug=debug )
+myrrd = sqmrrd.MySQMrrd(port=serial_port, database=rrd_database, debug=debug )
 
 if  not os.path.exists(rrd_database) :
     print "Create new rrd database"
-    new_rrd_database()
-
+    myrrd.create_database()
+else : 
+    print "Use old rrd database"
 
 
 print "SQM daemon starting"  
-# thread.start_new_thread( sqm_daemon,() )
-sqmt = sqmThread(target=sqm_daemon)
-sqmt.start()
-
+mydaemon = sqmThread(sqm_daemon)
+mydaemon.start()
 print "OK"
 
 
@@ -185,23 +163,25 @@ def init_page():
                      com  = serial_port
                    )
 
-
+#
+# Main page
+#
 def main_page():
-    if sqm.open_ser == 0: 
+    if not sqm.open_ser : 
         return init_page()
-    sqmr.generate_graph()   
+    myrrd.generate_graph()   
     return template( os.path.join(views_path, 'main.tpl'), 
-                        mpsas       = '%5.2f' % sqmr.mpsas, 
-                        dmpsas      = '%4.2f' % sqmr.dmpsas,
-                        ir          = '%04d' % sqmr.ir,
-                        vis         = '%04d' % sqmr.vis, 
-                        full        = '%04d' % sqmr.full, 
-                        count       = '%d' % sqmr.count,
-                        oled        = '%d' % sqmr.oled,
-                        humidity    = '%3d' % sqmr.humidity, 
-                        pressure    = '%4d' % sqmr.pressure,
-                        temperature = '%4.1f' % sqmr.temperature,
-                        devpoint    = '%4.1f' % sqmr.devpoint 
+                        mpsas       = '%5.2f' % myrrd.mpsas, 
+                        dmpsas      = '%4.2f' % myrrd.dmpsas,
+                        ir          = '%04d' % myrrd.ir,
+                        vis         = '%04d' % myrrd.vis, 
+                        full        = '%04d' % myrrd.full, 
+                        count       = '%d' % myrrd.count,
+                        oled        = '%d' % myrrd.oled,
+                        humidity    = '%3d' % myrrd.humidity, 
+                        pressure    = '%4d' % myrrd.pressure,
+                        temperature = '%4.1f' % myrrd.temperature,
+                        devpoint    = '%4.1f' % myrrd.devpoint 
                     )
  
 def info_page():
@@ -216,13 +196,13 @@ def info_page():
             return 'Yes'
         else: 
             return 'No'
-    while sqmr.lock_serial == 1 :
-        if debug == 1 :
+    while myrrd.lock_serial :
+        if debug :
             print "info_page() serial port si lock"
             time.sleep(1)
-    sqmr.lock_serial = 1
+    myrrd.lock_serial = True
     s = sqm.read_device_info().split(',')
-    sqmr.lock_serial = 0
+    myrrd.lock_serial = False
     protokol = long(s[1])
     model    = long(s[2])
     feature  = long(s[3])
@@ -260,13 +240,13 @@ def config_page():
             return 'Yes'
         else: 
             return 'No'
-    while sqmr.lock_serial == 1 :
-        if debug == 1:
+    while myrrd.lock_serial :
+        if debug :
             print "config_page() serial is lock"
             time.sleep(1)
-    sqmr.lock_serial = 1
+    myrrd.lock_serial = True
     s = sqm.read_config().split(',')
-    sqmr.lock_serial = 0
+    myrrd.lock_serial = False
     m_offset = float(s[1].split('m')[0])
     t_offest = float(s[2].split('C')[0])
     tc       = s[3].split(':')[1]
@@ -310,43 +290,68 @@ def do_init():
     if form_id == 'com':
         scom=request.forms.get('scom')
         print scom       
-#        sqmt.kill()
-        if sqmr.sqm.open_ser == 1:
-           sqmr.stop_serial() 
-        if sqm.open_ser == 1:
+        if myrrd.sqm.open_ser :
+           myrrd.stop_serial() 
+        if sqm.open_ser :
            sqm.close_serial() 
         print "Open serial"   
         sqm.open_serial(scom)
-        sqmr.start_serial(scom)
-#        print "start deamon"
-#        sqmt.start()
-        while not sqmr.first_data :
-            if debug : 
-                print "do_init() wait fist data" 
-                time.sleep(1)
-    return main_page()
+        myrrd.start_serial(scom)
+        if not mydaemon.isAlive():
+            print('thread killed')
+            print "restart deamon"
+            mydaemon.start()
+        if not myrrd.first_data :
+            if debug :
+                print "do_init() wait fist data"
+            return template( os.path.join(views_path, 'wait.tpl'))
+        else:
+            return main_page()
+
+#    while not myrrd.first_data :
+#            if debug : 
+#                print "do_init() wait fist data" 
+#                time.sleep(1)
+#    return main_page()
+
+@app.route('/wait')
+def wait_first_data():
+    if not myrrd.first_data :
+        if debug :
+                print "do_init() wait fist data"
+        return template( os.path.join(views_path, 'wait.tpl'))
+    else: 
+        return main_page()
+ 
+
 
 @app.route('/')
 @app.route('/main')
 def main(): 
     """main page"""
-    if sqm.open_ser == 1:
+    if sqm.open_ser : 
+#        while not myrrd.first_data :
+        if not myrrd.first_data :   
+            if debug :
+                print "main() wait fist data"
+#               time.sleep(1)
+            return template( os.path.join(views_path, 'wait.tpl'))
         return main_page()
     return init_page()
 
 @app.route('/main', method='POST') 
 def do_main():
     oled_off = int(request.forms.get('sled'))
-    while sqmr.lock_serial == 1 :
-       if debug == 1 :
+    while myrrd.lock_serial :
+       if debug :
          print "do_main() Serial is lock"
          time.sleep(1)     
-    sqmr.lock_serial = 1
+    myrrd.lock_serial = True
     if oled_off == 0:
       sqm.disable_oled()
     elif  oled_off == 1:
       sqm.enable_oled()
-    sqmr.lock_serial = 0  
+    myrrd.lock_serial = False
     return main_page()
 
 @app.route('/info')
@@ -358,11 +363,11 @@ def info():
 def do_info():
     """info page"""
     form_id=request.forms.get('id')
-    while sqmr.lock_serial == 1 :
-       if debug == 1 :
+    while myrrd.lock_serial :
+       if debug :
          print "do_info() Serial is lock"
          time.sleep(1)
-    sqmr.lock_serial = 1      
+    myrrd.lock_serial = True     
     if form_id == 'oled':
         oled_off = int(request.forms.get('sled'))
         if oled_off == 0:
@@ -377,7 +382,7 @@ def do_info():
             sqm.enable_dimmer()
     if form_id == 'contras':
         sqm.set_oled_contras(int(request.forms.get('scontras')))
-    sqmr.lock_serial = 0
+    myrrd.lock_serial = False 
     return info_page()
 
  
@@ -391,11 +396,11 @@ def config():
 def do_config():
     """config page"""
     form_id=request.forms.get('id')
-    while sqmr.lock_serial == 1 :
-        if debug == 1 :
+    while myrrd.lock_serial :
+        if debug  :
             print "do_config() Serial is lock "
             time.sleep(1)
-    sqmr.lock_serial = 1
+    myrrd.lock_serial = True
     
     if form_id == 'tc':
         tc_yes = int(request.forms.get('stc'))
@@ -425,7 +430,7 @@ def do_config():
 
     if form_id == 'contras':
         sqm.set_oled_contras(int(request.forms.get('scontras')))
-    sqmr.lock_serial = 0
+    myrrd.lock_serial = False
     return config_page()
 
 

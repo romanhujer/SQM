@@ -42,7 +42,7 @@ class tty:
         try: 
             print ('Init serial port') 
             self.ser = serial.Serial( port, baud)
-            self.debug = 0
+            self.debug = False 
         except serial.SerialException as e:
             sys.stderr.write('ERROR: Could not open port: ' + port + '\n')
             sys.exit(1)     
@@ -52,7 +52,7 @@ class tty:
 
 
     def send(self, ss):
-        if self.debug == 1: 
+        if self.debug : 
             print('Request:', ss)
         self.ser.write(ss)
 
@@ -66,28 +66,28 @@ class tty:
 # MySQM extension protokol
 class  MySQM:
 
-    def __init__(self, port='/dev/ttyUSB0', open=0, debug=0):    
+    def __init__(self, port='/dev/ttyUSB0', open=False, debug=False ) :
         self.debug = debug 
-        self.open_ser = 0
-        if open == 1:
+        self.open_ser = False
+        if open :
             self.open_serial(port)
 
 # Open serial port    
     def open_serial(self, port='/dev/ttyUSB0'):
-        if self.open_ser == 0:
+        if not self.open_ser : 
             self.sqm = tty(port) 
             self.sqm.debug = self.debug
             self.sqm.open()
-            self.open_ser = 1
+            self.open_ser = True
         else:
             print ('Serial is port alredy open!')
 
 # Close serial port
     def close_serial(self): 
-        if self.open_ser == 1:
+        if self.open_ser :
             self.sqm.close()
-            self.open_ser=0
-        self.open_ser = 0
+            self.open_ser = False
+        self.open_ser = False
          
 # Read box info 
     def read_device_info(self):    
@@ -177,6 +177,6 @@ class  MySQM:
 
 # Original Unihedrom protokol
 class UnihedronSQM:
-    def __init__(self, port='/dev/ttyUSB0', open=0, debug=0):
+    def __init__(self, port='/dev/ttyUSB0', open=False,  debug=False):
         self.debug = debug
 

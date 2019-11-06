@@ -39,7 +39,7 @@ var now = new Date();
 <td>
 <div style='width:17em;'>
 <br />
-&nbsp;&nbsp;Sky quality: <font class='c'>{{mpsas}}&#xb1;{{dmpsas}} </font> Mag/Arc&#xb2;Sec<br />
+&nbsp;&nbsp;Sky quality: <font class='c'>{{mpsas}}&#xb1;{{dmpsas}} </font> Mag/ArcSec&#xb2;<br />
 &nbsp;&nbsp;Temperature: <font class='c'>{{temperature}}</font>&deg;C<br />
 &nbsp;&nbsp;Barometric Pressure: <font class='c'>{{pressure}}</font>hPa<br />
 &nbsp;&nbsp;Relative Humidity: <font class='c'>{{humidity}}</font>%<br />

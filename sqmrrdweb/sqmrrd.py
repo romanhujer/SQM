@@ -7,30 +7,30 @@ import mysqm
 
 
 class MySQMrrd:
-    def __init__(self, port='/dev/ttyUSB0', database='data/sqm.rrd', debug=0):
+    def __init__(self, port='/dev/ttyUSB0', database='data/sqm.rrd', debug=False):
         self.database = database
         self.debug = debug
         self.first_data = False
-        self.lock_serial = 1
-        self.sqm = mysqm.MySQM(port,0, debug) 
-        self.lock_serial = 0
+        self.lock_serial = True
+        self.sqm = mysqm.MySQM(port,False, debug) 
+        self.lock_serial = False
 
 # start serial port 
     def start_serial(self, port='/dev/ttyUSB0'): 
-        if self.sqm.open_ser == 0 :
-            self.lock_serial = 1
+        if not self.sqm.open_ser : 
+            self.lock_serial = True
             self.sqm.open_serial(port)
-            self.lock_serial = 0 
+            self.lock_serial = False 
         else:
             print ('Serial is port alredy open!')
 
 # stop serial port
     def stop_serial(self):
-        if self.sqm.open_ser == 1 :  
-            self.lock_serial = 1
+        if self.sqm.open_ser :  
+            self.lock_serial = True
             self.sqm.close_serial()    
-            self.lock_serial = 0
-        self.sqm.open_ser = 0    
+            self.lock_serial = False
+        self.sqm.open_ser = False    
 
         
 
@@ -49,13 +49,13 @@ class MySQMrrd:
 
 # Read current data
     def read_sqm_current_data(self):
-        while  self.lock_serial == 1 :
-            if self.debug == 1 :
+        while  self.lock_serial :
+            if self.debug :
                 print "Serial is lock" 
-        self.lock_serial = 1
+        self.lock_serial = True
         s = self.sqm.read_sqm_weather().split(',')
-        self.lock_serial = 0
-        if self.debug == 1 : 
+        self.lock_serial = False
+        if self.debug : 
              print s
         self.mpsas       = float(s[1].split('m')[0])
         self.dmpsas      = float(s[2].split('e')[0])
@@ -80,7 +80,7 @@ class MySQMrrd:
                     ':%d'    % self.pressure  +
                     ':%.1f'  % self.devpoint
              )
-        if self.debug == 1:
+        if self.debug :
             print c 
         rrdtool.update( self.database, c )
 #               
@@ -88,7 +88,7 @@ class MySQMrrd:
     def generate_graph(self, graf='views/sqm.png', start='-1h'):
         rrdtool.graph ( graf,   "--title=Sky Quality Graph",
                                 "--start","%s" % start,  
-                                "--vertical-label", "Ma²s °C 100xhPa 10x%", 
+                                "--vertical-label", "m/as² °C 100xhPa 10x%", 
                                 "--width","400",
                                 "--height","120",
                                 "--color","BACK#26262A", 
