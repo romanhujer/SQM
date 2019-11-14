@@ -38,7 +38,7 @@ import serial
 #
 class tty:
 
-    def __init__(self, port = '/dev/ttyUSB0', baud=115200, timeout=2):
+    def __init__(self, port = '/dev/ttyUSB0', baud=115200, timeout=60):
         try: 
             print ('Init serial port') 
             self.ser = serial.Serial( port, baud)

@@ -62,7 +62,8 @@ WEB_PORT = 8080
 COM_PORT = '/dev/ttyUSB0'
 
 daemon_exit_flag = False
-lock_serial_port = False 
+lock_serial_port = False
+graph_start_time = '-1h' 
 
 debug = True
 
@@ -115,21 +116,23 @@ def sqm_daemon(threadName):
     daemon_exit_flag = False
     while not daemon_exit_flag:
       try:         
-        if myrrd.sqm.open_ser :
-             if  myrrd.lock_serial : 
-                    if myrrd.debug :
-                        print "sqm_daemon() serial port is lock"
-                        time.sleep(1)
-                    continue
-             myrrd.read_sqm_current_data()
-             time.sleep(15)
+        if  myrrd.sqm.open_ser :
+            if not  myrrd.lock_serial : 
+                myrrd.read_sqm_current_data()
+                time.sleep(15)
+            else:   
+                if myrrd.debug :
+                     print "sqm_daemon() serial port is lock"
+                     time.sleep(1)
+ 
         else:
-            print "sqm_daemon() wiat serial port open" 
-            time.sleep(1)
+            if myrrd.debug :
+                print "sqm_daemon() wiat serial port open" 
+                time.sleep(1)
       except:
-         print "sqm_daemon() Serial port error"
-         myrrd.sqm.open_ser = False
-         myrrd.lock_serial = False
+        print "sqm_daemon() Serial port error"
+        myrrd.sqm.open_ser = False
+        myrrd.lock_serial = False
     threadName.exit()
      
 
@@ -166,10 +169,10 @@ def init_page():
 #
 # Main page
 #
-def main_page():
+def main_page(start_time=graph_start_time):
     if not sqm.open_ser : 
         return init_page()
-    myrrd.generate_graph()   
+    myrrd.generate_graph(start=start_time)   
     return template( os.path.join(views_path, 'main.tpl'), 
                         mpsas       = '%5.2f' % myrrd.mpsas, 
                         dmpsas      = '%4.2f' % myrrd.dmpsas,
@@ -181,8 +184,18 @@ def main_page():
                         humidity    = '%3d' % myrrd.humidity, 
                         pressure    = '%4d' % myrrd.pressure,
                         temperature = '%4.1f' % myrrd.temperature,
-                        devpoint    = '%4.1f' % myrrd.devpoint 
+                        dewpoint    = '%4.1f' % myrrd.dewpoint,
+                        start_time  = start_time 
                     )
+                    
+
+def long_time_page():
+    myrrd.generate_graph(graf='views/sqm.png', start='-1h')
+    myrrd.generate_graph(graf='views/day.png', start='-1d')
+    myrrd.generate_graph(graf='views/week.png', start='-1w')
+    myrrd.generate_graph(graf='views/monht.png', start='-1m')
+    myrrd.generate_graph(graf='views/year.png', start='-1y')   
+    return template( os.path.join(views_path, 'longtime.tpl'))                     
  
 def info_page():
     def _on_off(c):
@@ -202,12 +215,16 @@ def info_page():
             time.sleep(1)
     myrrd.lock_serial = True
     s = sqm.read_device_info().split(',')
-    myrrd.lock_serial = False
+    if debug:
+        print s
     protokol = long(s[1])
     model    = long(s[2])
     feature  = long(s[3])
     serial   = s[4].split('\r')[0]
     s = sqm.read_config().split(',')
+    if debug:
+        print s
+    myrrd.lock_serial = False
     m_offset = float(s[1].split('m')[0])
     t_offest = float(s[2].split('C')[0])
     tc       = s[3].split(':')[1]
@@ -308,11 +325,6 @@ def do_init():
         else:
             return main_page()
 
-#    while not myrrd.first_data :
-#            if debug : 
-#                print "do_init() wait fist data" 
-#                time.sleep(1)
-#    return main_page()
 
 @app.route('/wait')
 def wait_first_data():
@@ -330,29 +342,37 @@ def wait_first_data():
 def main(): 
     """main page"""
     if sqm.open_ser : 
-#        while not myrrd.first_data :
         if not myrrd.first_data :   
             if debug :
                 print "main() wait fist data"
-#               time.sleep(1)
             return template( os.path.join(views_path, 'wait.tpl'))
         return main_page()
     return init_page()
 
 @app.route('/main', method='POST') 
 def do_main():
-    oled_off = int(request.forms.get('sled'))
-    while myrrd.lock_serial :
-       if debug :
-         print "do_main() Serial is lock"
-         time.sleep(1)     
-    myrrd.lock_serial = True
-    if oled_off == 0:
-      sqm.disable_oled()
-    elif  oled_off == 1:
-      sqm.enable_oled()
-    myrrd.lock_serial = False
-    return main_page()
+    form_id=request.forms.get('id')
+    print form_id
+    if form_id == 'oled':
+        oled_off = int(request.forms.get('sled'))
+        while myrrd.lock_serial :
+            if debug :
+                 print "do_main() Serial is lock"
+                 time.sleep(1)     
+        myrrd.lock_serial = True
+        if oled_off == 0:
+            sqm.disable_oled()
+        elif  oled_off == 1:
+            sqm.enable_oled()
+        myrrd.lock_serial = False
+        return main_page()
+    if form_id == 'graph':
+        graph_time=request.forms.get('graph')
+        if graph_time == 'long':
+            return long_time_page()
+        else:
+            return main_page(start_time = graph_time)
+        
 
 @app.route('/info')
 def info():
@@ -414,24 +434,25 @@ def do_config():
 
     if form_id == 'toffset':
         sqm.set_temp_offset(float(request.forms.get('stoffset')))
+    
+    if form_id == 'reset':
+        if int(request.forms.get('sreset')) == 4826157:
+             sqm.set_EEPROM_default_vaule()
 
-    if form_id == 'oled':
-        oled_off = int(request.forms.get('sled'))
-        if oled_off == 0:
-            sqm.disable_oled()
-        elif  oled_off == 1:
-            sqm.enable_oled()
-    if form_id == 'dimmer':
-        dimmer_off=int(request.forms.get('sdimmer'))
-        if dimmer_off == 0:
-            sqm.disable_dimmer()
-        elif dimmer_off == 1:
-           sqm.enable_dimmer()
-
-    if form_id == 'contras':
-        sqm.set_oled_contras(int(request.forms.get('scontras')))
+    if form_id == 'clear':    
+        if int(request.forms.get('sclear')) == 2165394:
+             myrrd.create_database()
+            
     myrrd.lock_serial = False
     return config_page()
+    
+@app.route('/offline')
+@app.route('/longtimegraph')
+def long_time():
+   """long time page"""	
+   return long_time_page()
+    
+    
 
 
 ###############################################################################

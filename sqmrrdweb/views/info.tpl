@@ -30,7 +30,7 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 <b>CALIBRATION</b><br />
 <br />
 &nbsp;&nbsp;Temperature calibration : <font class='c'>{{tc}}</font><br />
-&nbsp;&nbsp;Sky quality offset : <font class='c'>{{moffset}}</font> Mag/Arc&#xb2;Sec<br />
+&nbsp;&nbsp;Sky quality offset : <font class='c'>{{moffset}}</font> Mag/ArcSec&#xb2;<br />
 &nbsp;&nbsp;Temperature offset : <font class='c'>{{toffset}}</font>&deg;C<br />
 <br />
 <br />

@@ -115,7 +115,7 @@ void DisplSqm(  double mpsas, double dmpsas, int temp, byte hum , int pres, char
     }
     page=3;
     OledDisp.setCursor(0, 0);
-    OledDisp.print("Mag/Arc\xb2Sec T");
+    OledDisp.print("Mag/ArcSec\xb2 T");
     OledDisp.print(Blik ? blk : ' ' );
     OledDisp.print(' ');
     OledDisp.setCursor(0, 3);

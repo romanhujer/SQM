@@ -7,7 +7,7 @@ import mysqm
 
 
 class MySQMrrd:
-    def __init__(self, port='/dev/ttyUSB0', database='data/sqm.rrd', debug=False):
+    def __init__(self, port='/dew/ttyUSB0', database='data/sqm.rrd', debug=False):
         self.database = database
         self.debug = debug
         self.first_data = False
@@ -16,7 +16,7 @@ class MySQMrrd:
         self.lock_serial = False
 
 # start serial port 
-    def start_serial(self, port='/dev/ttyUSB0'): 
+    def start_serial(self, port='/dew/ttyUSB0'): 
         if not self.sqm.open_ser : 
             self.lock_serial = True
             self.sqm.open_serial(port)
@@ -37,14 +37,14 @@ class MySQMrrd:
 # Create Round Robin Database
     def create_database(self):
         rrdtool.create( self.database,
-                 '--start', 'now', 
-	         '--step', '30',
-	         'RRA:AVERAGE:0.5:1:1200', 
-		 'DS:mpas:GAUGE:600:0:25',
-		 'DS:hum:GAUGE:600:0:100',
-		 'DS:temp:GAUGE:600:-50:100',
-		 'DS:pres:GAUGE:600:500:2000',
-		 'DS:devp:GAUGE:600:-50:100'	
+                '--start', 'now', 
+	              '--step', '30',
+	              'RRA:AVERAGE:0.5:1:1200', 
+		            'DS:mpas:GAUGE:600:0:25',
+		            'DS:hum:GAUGE:600:0:100',
+		            'DS:temp:GAUGE:600:-50:100',
+		            'DS:pres:GAUGE:600:500:2000',
+		            'DS:dewp:GAUGE:600:-50:100'	
 		 )
 
 # Read current data
@@ -67,7 +67,7 @@ class MySQMrrd:
         self.humidity    = int(s[8].split('h')[0])
         self.pressure    = int(s[9].split('p')[0])
         self.temperature = float(s[10].split('C')[0])
-        self.devpoint    = round(243.04 * (math.log(self.humidity/100.0) +
+        self.dewpoint    = round(243.04 * (math.log(self.humidity/100.0) +
                                 ((17.625 * self.temperature)/(243.04 + self.temperature))) /
                             (17.625 - math.log(self.humidity/100.0) -
                                 ((17.625 * self.temperature)/(243.04 + self.temperature))),1)
@@ -78,7 +78,7 @@ class MySQMrrd:
                     ':%d'    % self.humidity +
                     ':%.1f'  % self.temperature  +
                     ':%d'    % self.pressure  +
-                    ':%.1f'  % self.devpoint
+                    ':%.1f'  % self.dewpoint
              )
         if self.debug :
             print c 
@@ -86,6 +86,7 @@ class MySQMrrd:
 #               
 # Generate graph
     def generate_graph(self, graf='views/sqm.png', start='-1h'):
+        print "generate_graph()" + start
         rrdtool.graph ( graf,   "--title=Sky Quality Graph",
                                 "--start","%s" % start,  
                                 "--vertical-label", "m/as² °C 100xhPa 10x%", 
@@ -99,28 +100,28 @@ class MySQMrrd:
                                 "DEF:humi=%s:hum:AVERAGE"   % self.database, 
                                 "DEF:temp=%s:temp:AVERAGE"  % self.database, 
                                 "DEF:pres=%s:pres:AVERAGE"  % self.database, 
-                                "DEF:devp=%s:devp:AVERAGE"  % self.database, 
+                                "DEF:dewp=%s:dewp:AVERAGE"  % self.database, 
                                 "CDEF:p02=pres,100,/", 
                                 "CDEF:h02=humi,10,/",
-                                "AREA:devp#8080D0:Dev p.°C",
-                                "LINE1:mpas#FF0000:SQM mpsas", 
+                                "AREA:dewp#8080D0:Dew p.°C",
+                                "LINE1:mpas#FF0000:SQM  m/as²", 
                                 "LINE1:temp#A000A0:Temp °C",
                                 "LINE1:h02#0000FF:Humidity",
                                 "LINE1:p02#00FF00:Press hPa",
                                 "COMMENT:\n",
-                                "GPRINT:devp:LAST:Now\: %5.1lf\t",
+                                "GPRINT:dewp:LAST:Now\: %5.1lf\t",
                                 "GPRINT:mpas:LAST:%2.2lf\t",
                                 "GPRINT:temp:LAST:%5.1lf\t",
                                 "GPRINT:humi:LAST:%6.0lf\t",
                                 "GPRINT:pres:LAST:%8.0lf",
                                 "COMMENT:\n",
-                                "GPRINT:devp:MAX:Max\: %5.1lf\t",
+                                "GPRINT:dewp:MAX:Max\: %5.1lf\t",
                                 "GPRINT:mpas:MAX:%2.2lf\t",
                                 "GPRINT:temp:MAX:%5.1lf\t",
                                 "GPRINT:humi:MAX:%6.0lf\t",
                                 "GPRINT:pres:MAX:%8.0lf",
                                 "COMMENT:\n",
-                                "GPRINT:devp:MIN:Min\: %5.1lf\t",
+                                "GPRINT:dewp:MIN:Min\: %5.1lf\t",
                                 "GPRINT:mpas:MIN:%2.2lf\t",
                                 "GPRINT:temp:MIN:%5.1lf\t",
                                 "GPRINT:humi:MIN:%6.0lf\t",

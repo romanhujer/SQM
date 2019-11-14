@@ -19,7 +19,7 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 </div >
 <div class='b'>
 <div style='width: 40em;'>
-<b>CALIBRATION</b><br />
+<b>BOX CALIBRATION</b><br />
 <br />
 <table>
 <tr> 
@@ -36,7 +36,7 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 %end 
 </form>
 <tr>
-<td> &nbsp;&nbsp;Sky quality offset : <font class='c'>{{moffset_s}}</font> Mag/Arc&#xb2;Sec&nbsp;
+<td> &nbsp;&nbsp;Sky quality offset : <font class='c'>{{moffset_s}}</font> Mag/ArcSec&#xb2;&nbsp;
 <td>
 <form action="/config" method="POST">
  <input type="hidden"  name="id" value="moffset">
@@ -54,7 +54,7 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 </table>
 <br />
 <br />
-<b>FACTORY RESET</b><br />
+<b>BOX FACTORY RESET</b><br />
 <br />
 <form action="/config" method="POST">
 &nbsp;&nbsp;Type 4826157 : 
@@ -63,10 +63,21 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
   <input type="submit" value="Reset">
 </form >
 <br />
+<b>CLEAR DATABASE</b><br />
+<br />
+<form action="/config" method="POST">
+&nbsp;&nbsp;Type 2165394 :
+  <input type="hidden"  name="id" value="clear">
+  <font class='c'><input type="number" style="width:100px;" size"7" name="sclear" value=""</input></font>
+  <input type="submit" value="Clear">
+</form >
+<br />
+
 </div>
 <br />
 <a href='/main'>Home</a>
 <a href='/info'>Box Info</a>
 <a href='/config' style='background-color: #552222;'>Configuration</a>
+<a href='/init'>Init Page</a>
 </body>
 </html>

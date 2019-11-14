@@ -29,7 +29,7 @@
 
 */
 #define Version "1.0.8"
-#define SERIAL_NUMBER "20191023"
+#define SERIAL_NUMBER "20191111"
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
@@ -80,6 +80,7 @@ void setup() {
   pinMode(BuzzerPin, OUTPUT);
   Serial.begin(SERIAL_BAUD);
   Serial.setTimeout(1000);
+  Serial.println("Ready");
   if ( bme.begin()){ 
      if (bme.isBME280()){
         Humidity = true;

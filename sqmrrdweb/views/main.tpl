@@ -43,22 +43,46 @@ var now = new Date();
 &nbsp;&nbsp;Temperature: <font class='c'>{{temperature}}</font>&deg;C<br />
 &nbsp;&nbsp;Barometric Pressure: <font class='c'>{{pressure}}</font>hPa<br />
 &nbsp;&nbsp;Relative Humidity: <font class='c'>{{humidity}}</font>%<br />
-&nbsp;&nbsp;Dew Point Temperature: <font class='c'>{{devpoint}} </font>&deg;C<br />
+&nbsp;&nbsp;Dew Point Temperature: <font class='c'>{{dewpoint}} </font>&deg;C<br />
 &nbsp;&nbsp;Count: <font class='c'>{{count}}</font><br />
 </div>
 <td>
-<img src=static/sqm.png>
+<a href="/longtimegraph"><img src=static/sqm.png></a>
+<tr>
+<td>&nbsp;<td>
+<form action="/main" method="POST">
+ <input type="hidden" name="id" value="graph">
+%if start_time == '-1h':
+  <input type="radio"  name="graph" value="-1h" checked> 1 hour
+%else:
+  <input type="radio"  name="graph" value="-1h" > 1 hour
+%end  
+%if start_time == '-3h':
+ <input type="radio"  name="graph" value="-3h" checked> 3 hours
+%else: 
+  <input type="radio"  name="graph" value="-3h"> 3 hours
+%end
+%if start_time == '-8h':  
+  <input type="radio"  name="graph" value="-8h" checked> 8 hours
+%else:
+  <input type="radio"  name="graph" value="-8h"> 8 hours
+%end  
+ <input type="radio"  name="graph" value="long"> Long time
+ <button type="submit">Change graph</button>
+</form>
 </table>
 <br />
 <br />
+<!--
 <b>RAW Data</b>
 <br />
 <br />
 &nbsp;&nbsp;Full:<font class='c'>{{full}}</font><br />
 &nbsp;&nbsp;Vis: <font class='c'>{{vis}}</font><br />
 &nbsp;&nbsp;Ir : <font class='c'>{{ir}}</font><br />
-<br />
 
+<br />
+-->
 
 <form action='/main' method='POST'>
 <input type="hidden" name="id" value="oled">

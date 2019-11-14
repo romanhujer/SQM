@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="600; URL=/main">
+  <meta http-equiv="refresh" content="60; URL=/main">
   <link rel="stylesheet" href="static/my.css" > 
 </head>
 
@@ -19,22 +19,30 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 </div >
 <div class='b'>
 <div style='width: 40em;'>
-<b>Select Serial Port for start</b><br />
 <br />
-<table>
-<tr>
-<form action="/init" method="POST">
-<td>&nbsp;&nbsp; 
- <input type="hidden" name="id" value="com">
-<td> 
- <input type="text" style="width:100%;" name="scom" size="12" value="{{com}}">
-<td> 
-  <input type="submit" value="Start">
-</form>
-</tr>
-</table>
+&nbsp;&nbsp;Hour
 <br />
+&nbsp;&nbsp;<img src=static/sqm.png>
 <br />
-<a  href="/offline"> Off-Line Graph</a>
+&nbsp;&nbsp;Day
+<br />
+&nbsp;&nbsp;<img src=static/day.png>
+<br />
+&nbsp;&nbsp;Week
+<br />
+&nbsp;&nbsp;<img src=static/week.png>
+<br />
+&nbsp;&nbsp;Monht
+<br />
+&nbsp;&nbsp;<img src=static/monht.png>
+<br />
+&nbsp;&nbsp;Year
+<br />
+&nbsp;&nbsp;<img src=static/year.png>
+<br />
+</div>
+<br />
+<a href='/main'>Home</a>
+</div>
 </body>
 </html>
