@@ -51,23 +51,31 @@ var now = new Date();
 <tr>
 <td>&nbsp;<td>
 <form action="/main" method="POST">
- <input type="hidden" name="id" value="graph">
+<input type="hidden" name="id" value="graph">
+<table>
+<tr>
+<td>1 hours: 
 %if start_time == '-1h':
-  <input type="radio"  name="graph" value="-1h" checked> 1 hour
+ <input type="radio"  name="graph" value="-1h" checked >
 %else:
-  <input type="radio"  name="graph" value="-1h" > 1 hour
-%end  
-%if start_time == '-3h':
- <input type="radio"  name="graph" value="-3h" checked> 3 hours
-%else: 
-  <input type="radio"  name="graph" value="-3h"> 3 hours
+ <input type="radio"  name="graph" value="-1h">
 %end
+<td>3 hours:
+%if start_time == '-3h':
+ <input type="radio"  name="graph" value="-3h" checked>
+%else: 
+ <input type="radio"  name="graph" value="-3h">
+%end
+<td>8 hours:
 %if start_time == '-8h':  
-  <input type="radio"  name="graph" value="-8h" checked> 8 hours
+  <input type="radio"  name="graph" value="-8h" checked>
 %else:
-  <input type="radio"  name="graph" value="-8h"> 8 hours
-%end  
- <input type="radio"  name="graph" value="long"> Long time
+  <input type="radio"  name="graph" value="-8h">
+%end
+<td>Long time:
+ <input type="radio"  name="graph" value="long">
+<tr>
+</table>
  <button type="submit">Change graph</button>
 </form>
 </table>

@@ -1,8 +1,15 @@
 # SQMWEB - web gui width  rrdtool
 
-NOTE  Is this only development vesion !!!
 
-for mysqm and rrdtool
+for mysqm
+
+
+Require install:
+
+	apt install python-serial
+	apt install python-bottle
+	apt install python-rrdtool
+
 
 
 

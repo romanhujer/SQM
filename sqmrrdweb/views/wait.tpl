@@ -21,5 +21,8 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 <div style='width: 40em;'>
 <b>Wait First data</b><br />
 <br />
+
+<a href="/init">Return to init</a>
+
 </body>
 </html>

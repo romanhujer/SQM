@@ -33,6 +33,7 @@
 #
 
 import os
+import glob 
 import time
 import logging 
 import argparse
@@ -162,8 +163,10 @@ print "OK"
 # Web pages rendering
 #
 def init_page():
+    ports=glob.glob('/dev/ttyUSB*')
     return template( os.path.join(views_path, 'init.tpl'),
-                     com  = serial_port
+                     ports =  ports,
+                     port = 'none'
                    )
 
 #
@@ -307,6 +310,8 @@ def do_init():
     if form_id == 'com':
         scom=request.forms.get('scom')
         print scom       
+        if scom == 'none':
+            return init_page()
         if myrrd.sqm.open_ser :
            myrrd.stop_serial() 
         if sqm.open_ser :

@@ -1,0 +1,15 @@
+serial
+serial*
+bottle.py
+*.rrd
+*.*~
+*~
+*.FCStd1
+*.step
+old*.*
+x.*
+X.*
+test.*
+*.pyc
+__pycache__
+*.swp
