@@ -19,10 +19,14 @@ Sky Quality Meter web manager</font></b></td><td align='right'>
 </div >
 <div class='b'>
 <div style='width: 40em;'>
+<br />
 <b>Wait First data</b><br />
 <br />
-
-<a href="/init">Return to init</a>
+<br />
+<br />
+<br />
+<a href="/main" style='background-color: #552222;'>Refresh</a>
+<a href="/init">Return to init gage</a>
 
 </body>
 </html>
