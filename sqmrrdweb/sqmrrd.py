@@ -37,14 +37,17 @@ class MySQMrrd:
 # Create Round Robin Database
     def create_database(self):
         rrdtool.create( self.database,
-                '--start', 'now', 
-	              '--step', '30',
-	              'RRA:AVERAGE:0.5:1:1200', 
-		            'DS:mpas:GAUGE:600:0:25',
-		            'DS:hum:GAUGE:600:0:100',
-		            'DS:temp:GAUGE:600:-50:100',
-		            'DS:pres:GAUGE:600:500:2000',
-		            'DS:dewp:GAUGE:600:-50:100'	
+                      '--start', 'now', 
+	              '--step', '60',
+	              'RRA:AVERAGE:0.5:1:3000',
+	              'RRA:AVERAGE:0.5:5:6000',
+	              'RRA:AVERAGE:0.5:60:1500',
+	              'RRA:AVERAGE:0.5:720:1500',
+ 	              'DS:mpas:GAUGE:600:0:25',
+		      'DS:hum:GAUGE:600:0:100',
+		      'DS:temp:GAUGE:600:-50:100',
+		      'DS:pres:GAUGE:600:500:2000',
+		      'DS:dewp:GAUGE:600:-50:100'	
 		 )
 
 # Read current data
