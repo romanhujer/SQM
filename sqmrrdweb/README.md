@@ -1,4 +1,4 @@
-# SQMWEB - web guiand rrd graphs
+# SQMWEB - web gui and rrd graphs
 
 
 for mysqm
