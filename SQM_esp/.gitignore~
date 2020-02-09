@@ -1,0 +1,23 @@
+# Object files
+*.o
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+
+Config.h
+PecPlus.ino
+Alternate_Config.h
+zConfig*.h
+Timer.ino.old

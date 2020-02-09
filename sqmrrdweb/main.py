@@ -163,7 +163,7 @@ print "OK"
 # Web pages rendering
 #
 def init_page():
-    ports=glob.glob('/dev/ttyUSB*')
+    ports=sorted(glob.glob('/dev/ttyUSB*'))
     return template( os.path.join(views_path, 'init.tpl'),
                      ports =  ports,
                      port = 'none'

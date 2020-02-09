@@ -28,8 +28,8 @@
   Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 
 */
-#define Version "1.0.8"
-#define SERIAL_NUMBER "20191111"
+#define Version "1.0.9"
+#define SERIAL_NUMBER "20200210"
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
@@ -147,9 +147,10 @@ if ( OledDisp.begin()) {
    TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
    
    sqm.setCalibrationOffset(SqmCalOffset);  // call offset
-   
+#ifdef EXTENDET_INFO_ON   
    DisplCalData();      
    delay(1500); // Pause for 1 seconds
+#endif    
    DisplWait('#');
 } // end of Setup
 
