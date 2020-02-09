@@ -1,4 +1,4 @@
-# SQMWEB - web gui width  rrdtool
+# SQMWEB - web gui and rrd graphs
 
 
 for mysqm
