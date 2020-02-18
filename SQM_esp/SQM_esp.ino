@@ -24,8 +24,8 @@
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 
-//#include "Config.h"
-#include "myConfig.h"
+#include "Config.h"
+//#include "myConfig.h"
 #include "Setup.h"
 
 #include <BMx280I2C.h>
