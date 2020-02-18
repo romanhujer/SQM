@@ -1,5 +1,5 @@
 # OnStep WiFi Server
-This is the EPS-01 aESP8266 SQM 
+This is the EPS-01 and ESP8266 SQM 
 
 # Installing the ESP8266 Platform
 Before you can flash the firmware on your ESP8266 device, you need to install the ESP8266
@@ -36,12 +36,12 @@ For the ESP-01, use the following parameters under Tools:
 - Debug Level: "None"
 
 Open the SQM_esp.ino file inside this folder. Check the "Config.h" file and set your vaules  for 
-
-const char* sensor_key = "xxxxxxxxxxxxxxxxxx";  // For auth on web server
-const char* host = "my.cloud.iot";
-const char* ssid     = "my_ssid";
-const char* password = "my_password";
-
+<pre>
+ const char* sensor_key = "xxxxxxxxxxxxxxxxxx";  // For auth on web server
+ const char* host = "my.cloud.iot";
+ const char* ssid     = "my_ssid";
+ const char* password = "my_password";
+</pre>
 
 # Wiring and PCB 
 see
