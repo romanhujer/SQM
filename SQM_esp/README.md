@@ -1,4 +1,4 @@
-# OnStep WiFi Server
+# ESP SQM
 This is the EPS-01 and ESP8266 SQM 
 
 # Installing the ESP8266 Platform
