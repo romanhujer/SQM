@@ -10,7 +10,7 @@ Under Preferences add this line in the additional "Boards Manager" area:
 
 Then from the "Tools, Boards, Boards Manager" menu select and install the ESP8266 add-on.
 
-# Flashing The WiFi Server
+# Flashing The WiFi
 The exact flashing procedure depends on which ESP8826 device you will be using.
 
 In the Arduino IDE, pick your device from "Tools, Boards". 
