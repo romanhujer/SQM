@@ -24,7 +24,7 @@
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 
-//#include "myConfig.h"
+//#include "Config.h"
 #include "myConfig.h"
 #include "Setup.h"
 
@@ -58,8 +58,11 @@ String WiFi_Msg;
 
 void setup()
 {
-// Wire.begin(0, 2); // I2C pin
-Wire.begin(); // I2C pin
+#ifdef ESP01_ON
+  Wire.begin(0, 2); // I2C pin ESP01
+#else
+  Wire.begin();   // I2C pin ESP8266 
+#endif
   Serial.begin(SERIAL_BAUD);
   Serial.setTimeout(1000);
   Serial.println();
