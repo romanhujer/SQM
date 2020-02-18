@@ -15,11 +15,11 @@ The exact flashing procedure depends on which ESP8826 device you will be using.
 
 In the Arduino IDE, pick your device from "Tools, Boards". 
 
-For a WeMos D1 Mini or NodeMCU, select the device from the list.
 For an ESP-01, select "Generic 8266 Module".
 
 Pin CHPD/EN must be HIGH (connected to 3.3V)
-Pin GPIO0 must be LOW (connected to GND).
+Pin GPIO0 must be LOW (connected to GND).  Use flash swich on PCB aan reset
+
 
 
 For the ESP-01, use the following parameters under Tools:
