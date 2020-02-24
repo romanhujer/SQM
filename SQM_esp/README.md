@@ -1,5 +1,5 @@
-# OnStep WiFi Server
-This is the EPS-01 aESP8266 SQM 
+# ESP SQM
+This is the EPS-01 and ESP8266 SQM 
 
 # Installing the ESP8266 Platform
 Before you can flash the firmware on your ESP8266 device, you need to install the ESP8266
@@ -10,16 +10,16 @@ Under Preferences add this line in the additional "Boards Manager" area:
 
 Then from the "Tools, Boards, Boards Manager" menu select and install the ESP8266 add-on.
 
-# Flashing The WiFi Server
+# Flashing The WiFi
 The exact flashing procedure depends on which ESP8826 device you will be using.
 
 In the Arduino IDE, pick your device from "Tools, Boards". 
 
-For a WeMos D1 Mini or NodeMCU, select the device from the list.
 For an ESP-01, select "Generic 8266 Module".
 
 Pin CHPD/EN must be HIGH (connected to 3.3V)
-Pin GPIO0 must be LOW (connected to GND).
+Pin GPIO0 must be LOW (connected to GND).  Use flash swich on PCB aan reset
+
 
 
 For the ESP-01, use the following parameters under Tools:
@@ -36,12 +36,12 @@ For the ESP-01, use the following parameters under Tools:
 - Debug Level: "None"
 
 Open the SQM_esp.ino file inside this folder. Check the "Config.h" file and set your vaules  for 
-
-const char* sensor_key = "xxxxxxxxxxxxxxxxxx";  // For auth on web server
-const char* host = "my.cloud.iot";
-const char* ssid     = "my_ssid";
-const char* password = "my_password";
-
+<pre>
+ const char* sensor_key = "xxxxxxxxxxxxxxxxxx";  // For auth on web server
+ const char* host = "my.cloud.iot";
+ const char* ssid     = "my_ssid";
+ const char* password = "my_password";
+</pre>
 
 # Wiring and PCB 
 see
