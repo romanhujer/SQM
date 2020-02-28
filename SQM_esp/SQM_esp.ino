@@ -145,9 +145,12 @@ void loop()
   String url;
   float battery = 0;
 
-  ReadWeather() ;
+  ReadWeather();
+  
   if (ReadEEAutoTempCal()) sqm.setTemperature( temp );  //temp call
+  
   sqm.takeReading();  
+  
   mas = sqm.mpsas;
   dmas = sqm.dmpsas;
   battery = int(analogRead(A0) / 1023.0 * 11 * 100 + 0.5) / 100.;
@@ -203,7 +206,7 @@ void send_cloud ( String url)
   
 
   WiFiClient wifi_client;
-  const int httpPort = 80;
+  const int httpPort = HTTP_PORT;
 
 
   if (!wifi_client.connect(host, httpPort)) {
@@ -218,7 +221,7 @@ void send_cloud ( String url)
   unsigned long timeout = millis();
   while (wifi_client.available() == 0) {
     if (millis() - timeout > 5000) {
-      Serial.println(">>> myS Timeout !");
+      Serial.println("HTTP Timeout !");
       wifi_client.stop();
       return;
     }

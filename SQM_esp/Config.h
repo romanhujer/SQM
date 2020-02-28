@@ -4,14 +4,16 @@
 
 */
 
-const char* sensor_key = "xxxxxxxxxxxxxxxxxx";  // For auth on web server
 const char* host       = "my.cloud.iot";
 String app             = "/app.bin";  //URI for HTTP GET  app
+#define HTTP_PORT  80
 
 const char* ssid       = "my_ssid";
 const char* password   = "my_password";
 
 const char* SensorID = "SQM-ESP01";
+const char* sensor_key = "xxxxxxxxxxxxxxxxxx";  // For auth on web server
+
 //select chip
 #define ESP01_ON  // For ESP-01 is _ON for full ESP8266 is _OFF 
 #define DEEP_SLEEP_OFF  //only ESP8266 for battery run  
