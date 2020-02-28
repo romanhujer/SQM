@@ -10,11 +10,11 @@ Under Preferences add this line in the additional "Boards Manager" area:
 
 Then from the "Tools, Boards, Boards Manager" menu select and install the ESP8266 add-on.
 
-And install this Arduino library: 
-* BMx280MI
+# Required libraries
 * Adafruit Unified Sensor
+* BMx280MI
 
-# Flashing The WiFi
+# Flashing 
 The exact flashing procedure depends on which ESP8826 device you will be using.
 
 In the Arduino IDE, pick your device from "Tools, Boards". 
@@ -46,8 +46,6 @@ Open the SQM_esp.ino file inside this folder. Check the "Config.h" file and set 
  const char* password = "my_password";
  
 </pre>
-
-#
 
 # Wiring and PCB 
 see
