@@ -17,8 +17,14 @@ In the Arduino IDE, pick your device from "Tools, Boards".
 
 For an ESP-01, select "Generic 8266 Module".
 
+Need insatll this Arduino library 
+* BMx280MI
+* Adafruit Unified Sensor
+
 Pin CHPD/EN must be HIGH (connected to 3.3V)
-Pin GPIO0 must be LOW (connected to GND).  Use flash swich on PCB aan reset
+Pin GPIO0 must be LOW (connected to GND).  Use flash swich on PCB and reset
+
+
 
 
 
@@ -39,9 +45,13 @@ Open the SQM_esp.ino file inside this folder. Check the "Config.h" file and set 
 <pre>
  const char* sensor_key = "xxxxxxxxxxxxxxxxxx";  // For auth on web server
  const char* host = "my.cloud.iot";
- const char* ssid     = "my_ssid";
+ String app      = "/app.bin";  //URI for HTTP GET  app
+ const char* ssid  = "my_ssid";
  const char* password = "my_password";
+ 
 </pre>
+
+#
 
 # Wiring and PCB 
 see

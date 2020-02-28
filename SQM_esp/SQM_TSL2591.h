@@ -50,7 +50,7 @@
 /**************************************************************************/
 
 #ifndef _TSL2591_H_
-#define _TSL2591_H_
+#define _Adafruit BME280_H_
 
 #if ARDUINO >= 100
  #include <Arduino.h>

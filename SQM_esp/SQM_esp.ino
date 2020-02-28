@@ -26,9 +26,9 @@
 
 
 //
-//#include "Config.h"
+#include "Config.h"
 // My testing config
-#include "myConfig.h"
+//#include "myConfig.h"
 
 
 #include "Setup.h"
@@ -200,7 +200,7 @@ void loop()
 
 void send_cloud ( String url)
 {
-  String app="/app.bin";
+  
 
   WiFiClient wifi_client;
   const int httpPort = 80;
