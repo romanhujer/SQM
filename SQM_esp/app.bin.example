@@ -1,0 +1,171 @@
+#!/usr/bin/perl
+#
+#  SQM  IoT cloud www server example app.bin 
+#
+# Copyright (c)  2020 Roman Hujer 
+#
+#   This program is free software: you can redistribute it and/or modify
+#   it under the terms of the GNU General Public License as published by
+#   the Free Software Foundation, either version 3 of the License, or
+#   (at your option) any later version.
+#
+#   This program is distributed in the hope that it will be useful,
+#   but WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#   GNU General Public License for more details.
+#
+#   You should have received a copy of the GNU General Public License
+#   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+#
+#
+#  mysql> desc sqm_data;
+# +----------+--------------+------+-----+---------+-------+
+# | Field    | Type         | Null | Key | Default | Extra |
+# +----------+--------------+------+-----+---------+-------+
+# | timesec  | int(11)      | NO   | PRI | NULL    |       |
+# | date     | date         | NO   | MUL | NULL    |       |
+# | time     | time         | NO   |     | NULL    |       |
+# | teplota1 | decimal(4,2) | YES  |     | NULL    |       |
+# | tlak     | decimal(6,2) | YES  |     | NULL    |       |
+# | vlhkost  | decimal(5,2) | YES  |     | NULL    |       |
+# | sensor   | char(20)     | YES  | MUL | NULL    |       |
+# | batery   | decimal(5,2) | YES  |     | NULL    |       |
+# | mpsas    | decimal(4,2) | YES  |     | NULL    |       |
+# | dmpsas   | decimal(4,2) | YES  |     | NULL    |       |
+# | dewpoint | decimal(4,2) | YES  |     | NULL    |       |
+# +----------+--------------+------+-----+---------+-------+
+#
+
+$sensor1_key = "xxxxxxxxxxxxxxxxxxxx";      
+$sensor2_key = "yyyyyyyyyyyyyyyyyyyy";
+
+$query_string =  $ENV{'QUERY_STRING'};
+
+$db_user = "user";
+$db pwd  = "password";
+$db_name = 'SQM_DB'
+ 
+use CGI;
+use DBI;
+ 
+
+print <<END_HTML; 
+Content-Type: text/html; charset=utf-8
+
+<body>
+END_HTML
+
+
+if ( $query_string eq "" ) {
+
+   print("No sensor data </body>");
+   exit;
+
+}
+
+
+$query =  new CGI; 
+$key   =  $query->param(KEY);
+
+
+
+#  For ESP8266 (ESP-12) sensor version 
+if ( $sensor1_key eq $key   ) {	
+
+ $teplota = 	$query->param(T) + 0;
+ $vlhkost = 	$query->param(H) + 0;
+ $tlak    = 	$query->param(P) + 0;
+ $battery =	  $query->param(V) + 0;
+ $mpsas   =	  $query->param(S) + 0;
+ $dmpsas  = 	$query->param(D) + 0;
+ $ID      =   $query->param(ID);
+ $sensorID = 	$ID;
+ $dewpoint =   int((243.04 * (log($vlhkost/100.0) +
+                     ((17.625 * $teplota)/(243.04 + $teplota))) / 
+		    (17.625 - log($vlhkost/100.0) - 
+		((17.625 * $teplota) / (243.04 + $teplota))))*100+0.5)/100;
+
+	
+ print("GET '$sensorID' data OK<br>");
+
+
+$timesec = time;
+
+# update database
+$dbh = DBI->connect('DBI:mysql:'. $db_name . 'localhost:3306',
+                      $db_usr, $db_pwb ) ||  die "Can't connect : $DBI::errstr";
+
+$dbh->do( <<END_SQL ) || die "Can't insert : $DBI::errstr";   
+ 
+ INSERT 
+   INTO sqm_data ( timesec, date, time, teplota1, tlak, vlhkost, mpsas, dmpsas, dewpoint, batery, sensor ) 
+ VALUES ( '$timesec', CURRENT_DATE(), CURRENT_TIME(), '$teplota', '$tlak', '$vlhkost', '$mpsas','$dmpsas','$dewpoint','$battery','$sensorID' )
+ 
+END_SQL
+
+
+$dbh->disconnect;
+
+ print("Database write OK<br>");
+
+
+}
+
+
+#  For ESP-01  sensor version 
+
+elsif	( $sensor3_key eq $key   ) {	
+
+ $teplota = 	$query->param(T) + 0;
+ $vlhkost = 	$query->param(H) + 0;
+ $tlak    = 	$query->param(P) + 0;
+ $mpsas   =  	$query->param(S) + 0;
+ $dmpsas  = 	$query->param(D) + 0;
+ $ID      =   $query->param(ID);
+ $sensorID = 	$ID;
+ $dewpoint =   int((243.04 * (log($vlhkost/100.0) +
+                     ((17.625 * $teplota)/(243.04 + $teplota))) / 
+		    (17.625 - log($vlhkost/100.0) - 
+		((17.625 * $teplota) / (243.04 + $teplota))))*100+0.5)/100;
+
+	
+ print("GET '$sensorID' data OK<br>");
+
+
+$timesec = time;
+
+$dbh = DBI->connect('DBI:mysql:'. $db_name . 'localhost:3306',
+                      $db_usr, $db_pwb ) ||  die "Can't connect : $DBI::errstr";
+
+$dbh->do( <<END_SQL ) || die "Can't insert : $DBI::errstr";   
+ 
+ INSERT 
+   INTO sqm_data ( timesec, date, time, teplota1, tlak, vlhkost, mpsas, dmpsas, dewpoint, sensor ) 
+ VALUES ( '$timesec', CURRENT_DATE(), CURRENT_TIME(), '$teplota', '$tlak', '$vlhkost', '$mpsas','$dmpsas','$dewpoint','$sensorID' )
+ 
+END_SQL
+
+
+$dbh->disconnect;
+
+ print("Database write OK<br>");
+
+
+}
+
+else {
+
+  print("No valid sensor key");
+
+
+}
+
+
+print <<END_HTML; 
+
+</body>
+END_HTML
+
+
+#END

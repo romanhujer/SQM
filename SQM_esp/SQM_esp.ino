@@ -1,6 +1,6 @@
 /*
 
-   Copyright (c) 2019 Roman Hujer
+   Copyright (c) 2020 Roman Hujer
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -17,23 +17,26 @@
 
 */
 
-#define Product "SQM ESP-01"
+#define Product "SQM ESP"
 #define Version "1.0"
 
 #include <Wire.h>
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
 
+
+//
 //#include "Config.h"
+// My testing config
 #include "myConfig.h"
+
+
 #include "Setup.h"
 
 #include <BMx280I2C.h>
 BMx280I2C bme(BME_I2C_ADDRESS);
 
 #include "SQM_TSL2591.h"
-
-#define SERIAL_BAUD 74880
 
 
 // Setup for SQM TSL2591
@@ -71,7 +74,7 @@ void setup()
   WiFi.begin(ssid, password);
 retry:
   Serial.printf("Wait for WiFi.");
-  for (uint8_t t = 10; t > 0; t--) {
+  for (uint8_t t = 30; t > 0; t--) {
     if ( WiFi.status() == WL_CONNECTED ) break;
     Serial.print(".");
     delay(500);
@@ -115,7 +118,7 @@ retry:
     sqm.config.gain = TSL2591_GAIN_LOW;
     sqm.config.time = TSL2591_INTEGRATIONTIME_200MS;
     sqm.configSensor();
-    //    sqm.showConfig();
+    sqm.showConfig();
     TSL_Msg = "TSL2591 OK";
   }
   else {
@@ -124,23 +127,30 @@ retry:
   } // end of if (sqm.begin())
 
   Serial.println(TSL_Msg);
-  
+
+#ifdef  EEPROM_ON
   SqmCalOffset = ReadEESqmCalOffset();     // SQM Calibration offset from EEPROM
   TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
-  sqm.setCalibrationOffset(SqmCalOffset);  // call offset
+#else 
+  SqmCalOffset =  SQM_CAL_OFFSET;  
+  TempCalOffset = TEMP_CAL_OFFSET; 
+#endif
 
- 
+  sqm.setCalibrationOffset(SqmCalOffset);  // call offset
 }
 
 void loop()
 {
   String response;
   String url;
+  float battery = 0;
+
   ReadWeather() ;
   if (ReadEEAutoTempCal()) sqm.setTemperature( temp );  //temp call
   sqm.takeReading();  
   mas = sqm.mpsas;
   dmas = sqm.dmpsas;
+  battery = int(analogRead(A0) / 1023.0 * 11 * 100 + 0.5) / 100.;
   Serial.println("");
   Serial.print("SQM: ");
   Serial.print(mas);
@@ -156,6 +166,8 @@ void loop()
   Serial.print("Pressure: ");
   Serial.print(pres/100);
   Serial.println(" hPa");
+  Serial.print("Battery Voltage: ");
+  Serial.println(battery);
     url = "?ID=";
     url += SensorID;
     url += "&KEY=";
@@ -170,6 +182,8 @@ void loop()
     url += mas;
     url += "&D=";
     url += dmas;
+    url += "&V=";
+    url += battery;
     send_cloud ( url  );
 
 #ifdef DEEP_SLEEP_ON
@@ -179,9 +193,8 @@ void loop()
   delay(100);
   Serial.println("Deep sleep.");
   ESP.deepSleep(SLEEP_SEC * 1000000);
-  delay(2000);
 #else
-  delay(300000); // čekej 5 minut
+  delay( SLEEP_SEC * 1000); // cekej
 #endif
 }
 
