@@ -10,6 +10,10 @@ Under Preferences add this line in the additional "Boards Manager" area:
 
 Then from the "Tools, Boards, Boards Manager" menu select and install the ESP8266 add-on.
 
+And install this Arduino library: 
+* BMx280MI
+* Adafruit Unified Sensor
+
 # Flashing The WiFi
 The exact flashing procedure depends on which ESP8826 device you will be using.
 
@@ -17,16 +21,8 @@ In the Arduino IDE, pick your device from "Tools, Boards".
 
 For an ESP-01, select "Generic 8266 Module".
 
-Need insatll this Arduino library 
-* BMx280MI
-* Adafruit Unified Sensor
-
 Pin CHPD/EN must be HIGH (connected to 3.3V)
 Pin GPIO0 must be LOW (connected to GND).  Use flash swich on PCB and reset
-
-
-
-
 
 For the ESP-01, use the following parameters under Tools:
 
