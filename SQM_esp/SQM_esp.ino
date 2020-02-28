@@ -169,8 +169,10 @@ void loop()
   Serial.print("Pressure: ");
   Serial.print(pres/100);
   Serial.println(" hPa");
+#ifndef ESP01_ON  
   Serial.print("Battery Voltage: ");
   Serial.println(battery);
+#endif
     url = "?ID=";
     url += SensorID;
     url += "&KEY=";
@@ -185,8 +187,10 @@ void loop()
     url += mas;
     url += "&D=";
     url += dmas;
+#ifndef ESP01_ON     
     url += "&V=";
     url += battery;
+#endif    
     send_cloud ( url  );
 
 #ifdef DEEP_SLEEP_ON
