@@ -26,7 +26,8 @@ Arduino compatible Sky Quality Meter using the TSL2591
 
 ## [Handheld Pro version on base ESP8266 (ESP-12)](https://github.com/romanhujer/SQM/tree/master/SQM_pro)
 
-  Wiring diagram a PCB on [EasyEDA](https://easyeda.com/hujer.roman/sqm-esp-v2_copy)  9
+  Wiring diagram a PCB on [EasyEDA](https://easyeda.com/hujer.roman/sqm-esp-v2_copy) 
+  
    NOTE: The wiring diagram may change !
   
   Featuers plan:
