@@ -94,7 +94,8 @@ void DisplCalData () {
 
 
 void DisplSqm(  double mpsas, double dmpsas, int temp, byte hum , int pres, char blk) {
-  
+  char _tmp[20];
+  float _lat, _lng;
   if ( ReadEEAutoContras()) {
      if ( mpsas < 10) {
         OledDisp.setContrast(150);
@@ -115,28 +116,70 @@ void DisplSqm(  double mpsas, double dmpsas, int temp, byte hum , int pres, char
     }
     page=3;
     OledDisp.setCursor(0, 0);
-    OledDisp.print("Mag/ArcSec\xb2 T");
+    sprintf(_tmp, "%02d/%02d/%02d", g_year-2000, g_month, g_day);
+    OledDisp.print(_tmp);
+    OledDisp.print(" UT");
+    sprintf(_tmp, "%02d:%02d", g_hour,  g_minute);
+    OledDisp.print(_tmp);
+    OledDisp.setCursor(0, 2);
+    OledDisp.print('M');
     OledDisp.print(Blik ? blk : ' ' );
-    OledDisp.print(' ');
-    OledDisp.setCursor(0, 3);
     if (mpsas < 10) OledDisp.print('0');
     OledDisp.print(mpsas);
-    OledDisp.print(char(0xb1));
-    OledDisp.print(dmpsas);
-    OledDisp.print('M');
+    OledDisp.print("mas");
+    OledDisp.print(char(0xb2));
     if ( ( ( temp < 0 ) ? -temp : temp) < 10) OledDisp.print(' ');
     if ( temp >= 0 )  OledDisp.print(' ');
     OledDisp.print( temp );
     OledDisp.print(char(0xb0));
     OledDisp.print('C');
-    OledDisp.setCursor(0, 5);
+    OledDisp.setCursor(0, 4);
     OledDisp.print("H:");
     if (hum < 10)  { OledDisp.print("  "); } else if  (hum < 100) {OledDisp.print(' ');}
     OledDisp.print( hum);
     OledDisp.print("% P:");
+    pres=int((pres+g_alt /8.3)+0.5);  //Přepočet na hladinu moře
     if (pres < 1000) { OledDisp.print(' ');}
     OledDisp.print(pres);
     OledDisp.print("hPa");
+    if (GPS_sync) {
+    OledDisp.setCursor(0, 5);
+    OledDisp.print("Alt:" );
+      if (g_alt < 10)  
+         { OledDisp.print("   ");} 
+      else if  (g_alt < 100) 
+         { OledDisp.print("  ");}  
+      else if  (g_alt < 1000)
+         { OledDisp.print(' ');}      
+      OledDisp.print( int(g_alt+.5));
+      OledDisp.print("m Sat:");    
+      OledDisp.print( g_sat < 10 ? g_sat : 9 );
+      OledDisp.setCursor(0, 6);
+      OledDisp.print("Lat: ");
+      _lat= g_lat < 0 ? - g_lat : g_lat;
+      OledDisp.print( int(_lat) );
+      OledDisp.print(char(0xb0));
+      OledDisp.print( i_g_min_s(_lat) );
+      OledDisp.print('\'');
+      OledDisp.print( i_g_min_s(_lat) );
+      OledDisp.print('\"');
+      OledDisp.print( g_lat < 0 ? 'S' : 'N' );
+      OledDisp.setCursor(0, 7);
+      OledDisp.print("Lon: " );
+      _lng = g_lng < 0 ? - g_lng : g_lng;
+      OledDisp.print( int(_lng) );
+      OledDisp.print(char(0xb0));
+      OledDisp.print( i_g_min_s(_lng) );
+      OledDisp.print('\'');
+      OledDisp.print( i_g_min_s(_lng) );
+      OledDisp.print('\"');  
+      OledDisp.print( g_lng < 0 ? 'W' : 'E' );
+    }  
+    else {
+      OledDisp.setCursor(0, 6);
+      OledDisp.print("GPS not sync "); 
+      
+    }
     _blk_change_status();
  }
 

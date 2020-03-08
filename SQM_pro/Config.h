@@ -6,7 +6,13 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define SERIAL_BAUD 74880    //Serial port baud Default is 115200
+#define DEBUG_OFF
+
+#define SERIAL_BAUD 74880    //Serial port baud Default is ESP 74880 or 115200
+
+
+#define GPS_ON               //NEO-6 GPS module support
+#define GPSBaud      9600
 
 // Select only one your display
 #define SH1106_ON  // SH1106  1.3"  128x64 OLED display is default

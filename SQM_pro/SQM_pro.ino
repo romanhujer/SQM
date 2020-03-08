@@ -39,6 +39,14 @@
 #include <BMx280I2C.h>
 #include <U8x8lib.h>
 #include "SQM_TSL2591.h"
+#ifdef GPS_ON
+  #include <SoftwareSerial.h>
+  #include "TinyGPS++.h"
+  TinyGPSPlus gps;
+  SoftwareSerial gpsSerial(13, 15);
+  
+#endif 
+
 
 // Setup  OLed Display
 
@@ -79,8 +87,11 @@ void setup() {
   pinMode(ModePin, INPUT_PULLUP);
   pinMode(BuzzerPin, OUTPUT);
   Serial.begin(SERIAL_BAUD);
- // Serial.setTimeout(1000);
+  Serial.setTimeout(1000);
   Serial.println("Ready");
+#ifdef GPS_ON
+  gpsSerial.begin(GPSBaud);
+#endif   
   if ( bme.begin()){ 
      if (bme.isBME280()){
         Humidity = true;
@@ -114,7 +125,9 @@ void readSQM(void);
     sqm.config.gain = TSL2591_GAIN_LOW;
     sqm.config.time = TSL2591_INTEGRATIONTIME_200MS;
     sqm.configSensor();
+#ifdef DEBUG_ON    
     sqm.showConfig();
+#endif     
   } 
   else {
     TSL_Msg = "TSL2591 Err";
@@ -160,6 +173,7 @@ if ( OledDisp.begin()) {
 
 void loop() {
   String response;
+  sqmGPS();
   
   if (digitalRead(ModePin))   {
     SerialOK  = false;
@@ -184,7 +198,7 @@ void loop() {
     
     sqm.takeReading();  
     
-    DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '#'); 
+    DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), ':'); 
 
     delay(2000);
     
@@ -404,7 +418,7 @@ void loop() {
           Serial.println(oled);
         }
 // View current information
-        DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '@');
+        DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '.');
         SqmCalOffset  = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
         TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
         sqm.setCalibrationOffset(SqmCalOffset);
