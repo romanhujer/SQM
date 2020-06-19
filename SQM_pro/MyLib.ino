@@ -190,11 +190,27 @@ void DisplWait(char blk)  {
       buzzer(200);
     }
     page=4;
-    OledDisp.setCursor(0, 3);
+    OledDisp.setCursor(0, 2);
     if ( blk == '#') 
        OledDisp.print("Wait first data");
     else 
        OledDisp.print("Wait USB data ");
     OledDisp.print(Blik ? blk : ' ' );
     _blk_change_status();
+  float battery = int(analogRead(A0) / 1023.0 * 11 * 100 + 0.5) / 100.;
+  OledDisp.setCursor(0, 4);
+  OledDisp.print("Batery: " ); 
+  OledDisp.print( String(battery,2));
+  OledDisp.print("V" );  
+  #ifdef WIFI_ON
+  OledDisp.setCursor(0, 6);
+  
+  if (  WiFiConnected ) {
+     OledDisp.print(WiFi.localIP());
+  } 
+  else {
+     OledDisp.print("Not connect!" ); 
+  }  
+#endif
+
 }

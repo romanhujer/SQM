@@ -28,13 +28,14 @@
   Wiring diagram a PCB  on   https://easyeda.com/hujer.roman/sqm-hr
 
 */
-#define Version "1.0.8"
-#define SERIAL_NUMBER "20191111"
+#define Version "2.0.0"
+#define SERIAL_NUMBER "20200604"
 #include "Config.h"
 #include "Setup.h"
 #include "Validate.h"
 
 #include <Wire.h>
+#include <ESP8266WiFi.h>
 #include <EEPROM.h>
 #include <BMx280I2C.h>
 #include <U8x8lib.h>
@@ -44,7 +45,6 @@
   #include "TinyGPS++.h"
   TinyGPSPlus gps;
   SoftwareSerial gpsSerial(13, 15);
-  
 #endif 
 
 
@@ -71,6 +71,8 @@ boolean USBmodeON = false;
 boolean SerialOK  = false;
 boolean Blik      = false;
 boolean Humidity  = true;
+boolean WiFiConnected = false; 
+byte SQWcount = 0;
 
 float temp = 0;
 float hum = 0;
@@ -88,10 +90,15 @@ void setup() {
   pinMode(BuzzerPin, OUTPUT);
   Serial.begin(SERIAL_BAUD);
   Serial.setTimeout(1000);
-  Serial.println("Ready");
+#ifdef DEBUG_ON
+ delay(5000);
+ Serial.println("Ready");
+#endif
+  
 #ifdef GPS_ON
   gpsSerial.begin(GPSBaud);
-#endif   
+#endif  
+
   if ( bme.begin()){ 
      if (bme.isBME280()){
         Humidity = true;
@@ -166,15 +173,26 @@ if ( OledDisp.begin()) {
 
    DisplCalData();      
    delay(1500); // Pause for 1 seconds
+
+#ifdef WIFI_ON
+  wifi_setup(); 
+#endif
+ 
    DisplWait('#');
+
+
 } // end of Setup
 
 //=======================================================================================
 
 void loop() {
   String response;
+#ifdef GPS_ON
   sqmGPS();
-  
+#endif
+#ifdef WIFI_ON
+  wifi_setup(); 
+#endif
   if (digitalRead(ModePin))   {
     SerialOK  = false;
     if (USBmodeON) {
@@ -199,7 +217,11 @@ void loop() {
     sqm.takeReading();  
     
     DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), ':'); 
-
+    if(  WiFiConnected ){  
+      if (SQWcount == 1) wifi_main( sqm.mpsas, sqm.dmpsas, temp, hum , pres  );
+      if ( ++SQWcount > 4) SQWcount = 0;  
+    }
+    else wifi_setup(); 
     delay(2000);
     
   }

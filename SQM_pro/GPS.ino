@@ -17,8 +17,8 @@ byte g_day = 0;
 byte g_hour = 0;
 byte g_minute = 0;
 byte g_second = 0;
-float g_lat = 0;
-float g_lng = 0;
+double g_lat = 0;
+double g_lng = 0;
 
 
 
@@ -60,7 +60,7 @@ void ProcGPSData () {
     g_minute = gps.time.minute();
     g_second = gps.time.second();
   }
-#ifdef DEBUG_ON
+#ifdef DEBUG_GPS_ON
   if ( GPS_sync ) {
     Serial.println("GPS sync:");
   } else {
@@ -87,22 +87,29 @@ void ProcGPSData () {
 
 
 
-int i_g_min ( float g_in)
+int i_g_min ( double g_in)
 {
   
   return int((g_in - int(g_in) * 1.) * 60. + 0.5);
 }
 
-int i_g_min_s ( float g_in)
+int i_g_min_s ( double g_in)
 {
   
   return int((g_in - int(g_in) * 1.) * 60. );
 }
 
-int i_g_sec_s ( float g_in)
+int i_g_sec ( double g_in)
 {
   
-  return int(((g_in - int(g_in) * 1.) * 3600. + 0.5 ) - int((g_in - int(g_in) * 1.) * 60.) * 60);
+  return int(((g_in - int(g_in) * 1.) * 3600. + 0.5 ) - int((g_in - int(g_in) * 1.) * 60.) * 60 + .5);
 }
+
+int i_g_sec_s ( double g_in)
+{
+  
+  return (((g_in - int(g_in) * 1.) * 3600. + 0.5 ) - int((g_in - int(g_in) * 1.) * 60.) * 60);
+}
+
 
 #endif

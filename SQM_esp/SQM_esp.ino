@@ -26,9 +26,9 @@
 
 
 //
-#include "Config.h"
+//#include "Config.h"
 // My testing config
-//#include "myConfig.h"
+#include "myConfig.h"
 
 
 #include "Setup.h"

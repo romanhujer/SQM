@@ -18,7 +18,7 @@
 // read SQMCalOffset from EEPROM
 float ReadEESqmCalOffset(){
   float f;
-  if ( EEPROM.read(EEPROM_SQM_CAL_INDEX_C) == 'M') {
+  if ( EEPROM.read(EEPROM_SQM_CAL_INDEX_C) == 'm') {
     f = EEPROM_readFloat(EEPROM_SQM_CAL_INDEX_F);
   }
   else {
@@ -30,7 +30,7 @@ float ReadEESqmCalOffset(){
 // Write SQMCalOffset to EEPROM
 void WriteEESqmCalOffset( float f){
    if ( ( f > 25 )|| ( f < -25) ) return;  // value out of range 
-   EEPROM.write(EEPROM_SQM_CAL_INDEX_C,'M');
+   EEPROM.write(EEPROM_SQM_CAL_INDEX_C,'m');
    EEPROM_writeFloat(EEPROM_SQM_CAL_INDEX_F, f);
 }
 
@@ -38,7 +38,7 @@ void WriteEESqmCalOffset( float f){
 // Read Temperature Calibration offset from EEPROM
 float ReadEETempCalOffset(){
   float f;
-    if ( EEPROM.read(EEPROM_TEMP_CAL_INDEX_C) == 'T' ) {
+    if ( EEPROM.read(EEPROM_TEMP_CAL_INDEX_C) == 't' ) {
     f = EEPROM_readFloat(EEPROM_TEMP_CAL_INDEX_F);
   }
   else {
@@ -50,7 +50,7 @@ float ReadEETempCalOffset(){
 // Write Temperature Calibration offset to EEPROM
 void WriteEETempCalOffset( float f) {
   if ( ( f > 50 )|| ( f < -50) ) return;  // value out of range 
-   EEPROM.write(EEPROM_TEMP_CAL_INDEX_C,'T'); 
+   EEPROM.write(EEPROM_TEMP_CAL_INDEX_C,'t'); 
    EEPROM_writeFloat(EEPROM_TEMP_CAL_INDEX_F, f);
 }
 
@@ -72,10 +72,10 @@ void WriteEEAutoContras( boolean _b ) {
 
 // Read AutoTemperature Calibratiosn
 boolean ReadEEAutoTempCal() {
-  if ( EEPROM.read(EEPROM_AUTO_TEMP_INDEX_C) == 'N' )  
-     return false;
-  else 
+  if ( EEPROM.read(EEPROM_AUTO_TEMP_INDEX_C) == 'Y' )  
      return true;
+  else 
+     return false;
 }
 
 // Write 
