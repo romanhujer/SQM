@@ -35,7 +35,9 @@
 #include "Validate.h"
 
 #include <Wire.h>
+#ifdef WIFI_ON
 #include <ESP8266WiFi.h>
+#endif
 #include <EEPROM.h>
 #include <BMx280I2C.h>
 #include <U8x8lib.h>
@@ -84,7 +86,7 @@ String TSL_Msg;
 char oled[6] = "A5,11";
 
 void setup() {
-
+  
   Wire.begin(); 
   pinMode(ModePin, INPUT_PULLUP);
   pinMode(BuzzerPin, OUTPUT);
@@ -217,13 +219,14 @@ void loop() {
     sqm.takeReading();  
     
     DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), ':'); 
+#ifdef WIFI_ON
     if(  WiFiConnected ){  
       if (SQWcount == 1) wifi_main( sqm.mpsas, sqm.dmpsas, temp, hum , pres  );
       if ( ++SQWcount > 4) SQWcount = 0;  
     }
     else wifi_setup(); 
     delay(2000);
-    
+#endif    
   }
     else {
 //
@@ -447,4 +450,5 @@ void loop() {
        
     } // end of while ( Serial.available() )
   }  // end of if (digitalRead(ModePin)) 
+  delay (5000);
 } // end of loop()

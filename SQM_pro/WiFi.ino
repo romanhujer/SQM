@@ -1,6 +1,7 @@
 // WiFi.ino
 // Copyright (c) 2020 Roman Hujer   http://hujer.net
 //
+#ifdef WIFI_ON
 
 void wifi_setup(){
  
@@ -148,3 +149,5 @@ void send_cloud ( String url)
   Serial.println("closing connection");
 
 }
+
+#endif

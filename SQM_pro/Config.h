@@ -17,7 +17,7 @@
 #define GPS_ON               //NEO-6 GPS module support
 #define GPSBaud      9600
 
-#define WIFI_ON
+#define WIFI_OFF
 
 
 const char* host       = "iot.hujer.net";
@@ -47,7 +47,7 @@ const char* sensor_key = "xxxxxxxxxxxxxxxxxx";  // For auth on web server
 #define DEFALUT_CONTRAS 0     // default Display contras
 
 
-#define SQM_CAL_OFFSET  -1.30  // default SQM Calibration offset but priority is in EEPROM stored value
+#define SQM_CAL_OFFSET  -1.0  // default SQM Calibration offset but priority is in EEPROM stored value
 #define TEMP_CAL_OFFSET 0.0   // default Temperature Calibration offset but priority is in EEPROM stored value
 
 #endif

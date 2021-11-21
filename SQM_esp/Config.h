@@ -18,7 +18,9 @@ const char* sensor_key = "xxxxxxxxxxxxxxxxxx";  // For auth on web server
 #define ESP01_ON  // For ESP-01 is _ON for full ESP8266 is _OFF 
 #define DEEP_SLEEP_OFF  //only ESP8266 for battery run  
 
-#define SERIAL_BAUD 74880  // 74880 default  pro ESP chip boot  (For some Linux need use 115200)   
+//#define SERIAL_BAUD 74880  // 74880 default  pro ESP chip boot  (For some Linux need use 115200)   
+#define SERIAL_BAUD 115200
+
 
 #define EEPROM_OFF         // USE eeprom for store callibration values 
 #define SQM_CAL_OFFSET  -2.50  // default SQM Calibration offset but priority is in EEPROM stored value
