@@ -18,7 +18,7 @@
 // read SQMCalOffset from EEPROM
 float ReadEESqmCalOffset(){
   float f;
-  if ( EEPROM.read(EEPROM_SQM_CAL_INDEX_C) == 'M') {
+  if ( EEPROM.read(EEPROM_SQM_CAL_INDEX_C) == 'x') {
     f = EEPROM_readFloat(EEPROM_SQM_CAL_INDEX_F);
   }
   else {
@@ -30,7 +30,7 @@ float ReadEESqmCalOffset(){
 // Write SQMCalOffset to EEPROM
 void WriteEESqmCalOffset( float f){
    if ( ( f > 25 )|| ( f < -25) ) return;  // value out of range 
-   EEPROM.write(EEPROM_SQM_CAL_INDEX_C,'M');
+   EEPROM.write(EEPROM_SQM_CAL_INDEX_C,'x');
    EEPROM_writeFloat(EEPROM_SQM_CAL_INDEX_F, f);
 }
 

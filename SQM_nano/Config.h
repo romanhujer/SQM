@@ -14,12 +14,12 @@
 
 #define EXTENDET_INFO_ON  // Two extended Startup info screen
  
-#define EXTENDET_PROTOCOL_ON  // My Extender protocol for weather info (Disable when is project compilation Big)
+#define EXTENDET_PROTOCOL_OFF  // My Extender protocol for weather info (Disable when is project compilation Big)
 
 #define DEFALUT_CONTRAS 0     // default Display contras
 
 
-#define SQM_CAL_OFFSET  -0.60  // default SQM Calibration offset but priority is in EEPROM stored value
+#define SQM_CAL_OFFSET  -1.0  // default SQM Calibration offset but priority is in EEPROM stored value
 #define TEMP_CAL_OFFSET 0.0   // default Temperature Calibration offset but priority is in EEPROM stored value
 
 #endif

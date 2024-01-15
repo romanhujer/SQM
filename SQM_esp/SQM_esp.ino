@@ -23,7 +23,9 @@
 #include <Wire.h>
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
-
+#include <OneWire.h>
+#include <DallasTemperature.h>
+ 
 
 //
 //#include "Config.h"
@@ -33,8 +35,12 @@
 
 #include "Setup.h"
 
+
+
 #include <BMx280I2C.h>
 BMx280I2C bme(BME_I2C_ADDRESS);
+
+
 
 #include "SQM_TSL2591.h"
 
@@ -45,10 +51,17 @@ SQM_TSL2591 sqm = SQM_TSL2591(2591);
 float SqmCalOffset =  SQM_CAL_OFFSET ;   // SQM Calibration offset from EEPROM
 float TempCalOffset = TEMP_CAL_OFFSET;   // Temperature Calibration offset from EEPROM
 
+// Setup a oneWire instance to communicate with any OneWire device
+OneWire oneWire(ONE_WIRE_BUS);  
+ 
+// Pass oneWire reference to DallasTemperature library
+DallasTemperature sensors(&oneWire);
+
 boolean InitError = false;
 boolean Humidity  = true;
 
 float temp = 0;
+float temp2 = 0; 
 float hum =  0;
 float pres = 0;
 float mas =  0;
@@ -61,6 +74,8 @@ String WiFi_Msg;
 
 void setup()
 {
+  sensors.begin();
+  
 #ifdef ESP01_ON
   Wire.begin(0, 2); // I2C pin ESP01
 #else
@@ -144,7 +159,9 @@ void loop()
   String response;
   String url;
   float battery = 0;
-
+ 
+  sensors.requestTemperatures(); 
+  temp2 = sensors.getTempCByIndex(0);
   ReadWeather();
   
   if (ReadEEAutoTempCal()) sqm.setTemperature( temp );  //temp call
@@ -160,8 +177,11 @@ void loop()
   Serial.print("+-");
   Serial.print(dmas);
   Serial.println("mas^2");
-  Serial.print("Temp: ");
+  Serial.print("Temp1: ");
   Serial.print(temp);
+  Serial.println("°C");
+  Serial.print("Temp2: ");
+  Serial.print(temp2);
   Serial.println("°C");
   Serial.print("Humidity: ");
   Serial.print(hum );
@@ -178,6 +198,8 @@ void loop()
     url += "&KEY=";
     url += sensor_key;
     url += "&T=";
+    url +=  temp2;
+    url += "&B=";
     url +=  temp;
     url += "&H=";
     url += hum;

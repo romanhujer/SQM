@@ -22,7 +22,7 @@ float ReadEESqmCalOffset(){
     f = EEPROM_readFloat(EEPROM_SQM_CAL_INDEX_F);
   }
   else {
-   f = SQM_CAL_OFFSET;  
+    f = SQM_CAL_OFFSET;  
   } 
   return f;
 }

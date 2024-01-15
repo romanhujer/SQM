@@ -38,7 +38,17 @@
 #include <EEPROM.h>
 #include <BMx280I2C.h>
 #include <U8x8lib.h>
-#include "SQM_TSL2591.h"
+
+
+#include <Adafruit_Sensor.h>
+#include <Adafruit_TSL2591.h>
+#include <Adafruit_GFX.h>
+#include <math.h>
+
+#define LOWSCALE 1.0
+#define MEDSCALE 25.0
+#define HIGHSCALE 428.0
+#define MAXSCALE 9876.0
 
 // Setup  OLed Display
 
@@ -52,8 +62,12 @@
 // Setup temperatue sensor
 BMx280I2C bme(BME_I2C_ADDRESS);
 
-// Setup for SQM TSL2591
-SQM_TSL2591 sqm = SQM_TSL2591(2591);
+Adafruit_TSL2591 tsl=Adafruit_TSL2591(2591);
+double gainscale = MAXSCALE;
+uint32_t luminosity;
+uint16_t ir, full, visible;
+double adjustedVisible, adjustedIR;
+double mag;
 
 float SqmCalOffset =  SQM_CAL_OFFSET ;   // SQM Calibration offset from EEPROM
 float TempCalOffset = TEMP_CAL_OFFSET;   // Temperature Calibration offset from EEPROM
@@ -100,25 +114,10 @@ void setup() {
   }
 
 
-void readSQM(void);
-  if (sqm.begin()) {
-#ifdef SH1106_ON            
-    TSL_Msg = "TSL2591 OK";
-#endif
-#ifdef SSD1306_ON        
-        TSL_Msg = "TSL";
-#endif        
-    sqm.verbose = false;
-    sqm.config.gain = TSL2591_GAIN_LOW;
-    sqm.config.time = TSL2591_INTEGRATIONTIME_200MS;
-    sqm.configSensor();
-//    sqm.showConfig();
-  } 
-  else {
-    TSL_Msg = "TSL2591 Err";
-    InitError = true;
-  } // end of if (sqm.begin())
-    
+  tsl.begin();
+  tsl.setGain(TSL2591_GAIN_MAX);
+  tsl.setTiming(TSL2591_INTEGRATIONTIME_600MS);
+
  
 // Init Oled Dislay
 if ( OledDisp.begin()) {
@@ -146,7 +145,7 @@ if ( OledDisp.begin()) {
    SqmCalOffset = ReadEESqmCalOffset();     // SQM Calibration offset from EEPROM
    TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
    
-   sqm.setCalibrationOffset(SqmCalOffset);  // call offset
+//   sqm.setCalibrationOffset(SqmCalOffset);  // call offset
 #ifdef EXTENDET_INFO_ON   
    DisplCalData();      
    delay(1500); // Pause for 1 seconds
@@ -178,11 +177,11 @@ void loop() {
     oled[3]='1';
     ReadWeather() ;
 
-    if (ReadEEAutoTempCal()) sqm.setTemperature( temp );  //temp call
+//    if (ReadEEAutoTempCal()) sqm.setTemperature( temp );  //temp call
     
-    sqm.takeReading();  
+    mySQM();  
     
-    DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '#'); 
+    DisplSqm( mag,0, int(temp+0.5), int(hum), int(pres / 100), '#'); 
 
     delay(2000);
     
@@ -203,19 +202,19 @@ void loop() {
       if (digitalRead(ModePin))  break ;  // check end USB mode
 
       ReadWeather();
-      if (ReadEEAutoTempCal()) sqm.setTemperature( temp );   // SQM temp calib
+//      if (ReadEEAutoTempCal()) sqm.setTemperature( temp );   // SQM temp calib
 
       String counter_string = String(counter++);
       while ( counter_string.length() < 10) {
         counter_string = '0' + counter_string;
       }
    
-      sqm.takeReading();
-      String sqm_string = String( ( sqm.mpsas <0) ? -sqm.mpsas : sqm.mpsas, 2);
+      mySQM();
+      String sqm_string = String( ( mag <0) ? -mag : mag, 2);
       while ( sqm_string.length() < 5) {
         sqm_string = '0' + sqm_string;
       }
-      _sign = ( sqm.mpsas < 0 ) ? '-' : ' ';
+      _sign = ( mag < 0 ) ? '-' : ' ';
       sqm_string = _sign + sqm_string;
 
 
@@ -255,11 +254,11 @@ void loop() {
 
 // My extension request for weather information
       } else if (command.equals("w")) { 
-        String ir_string = String(sqm.ir);
+        // String ir_string = String(sqm.ir);
         while ( ir_string.length() < 5) { 
         ir_string = '0' + ir_string;
         }
-        String vis_string = String(sqm.vis);
+       // String vis_string = String(sqm.vis);
         while ( vis_string.length() < 5) { 
           vis_string = '0' + vis_string;
         }
@@ -277,10 +276,10 @@ void loop() {
          pres_string = '0' + pres_string;
        }
        Serial.println("w," + sqm_string + "m,"
-                          + String(sqm.dmpsas, 2) + "e,"
+                          + String(mag, 2) + "e,"
 //                          + f_string + "f,"
-                          + ir_string + "i,"
-                          + vis_string + "v,"
+//                          + ir_string + "i,"
+//                          + vis_string + "v,"
                           + counter_string +"c,"
                           + oled + ',' 
                           + hum_string + "h,"
@@ -361,7 +360,7 @@ void loop() {
 // Disable temperature callibration (note lower case "d")            
                else if ( _x == 'd') { 
                     WriteEEAutoTempCal(false);
-                    sqm.resetTemperature();
+                  //  sqm.resetTemperature();
                     Serial.println("zdaL");                        
                }
 
@@ -402,10 +401,10 @@ void loop() {
           Serial.println(oled);
         }
 // View current information
-        DisplSqm( sqm.mpsas, sqm.dmpsas, int(temp+0.5), int(hum), int(pres / 100), '@');
+        DisplSqm( mag, 0, int(temp+0.5), int(hum), int(pres / 100), '@');
         SqmCalOffset  = ReadEESqmCalOffset();    // SQM Calibration offset from EEPROM
         TempCalOffset = ReadEETempCalOffset();   // Temperature Calibration offset from EEPROM
-        sqm.setCalibrationOffset(SqmCalOffset);
+        // sqm.setCalibrationOffset(SqmCalOffset);
        
     } // end of while ( Serial.available() )
   }  // end of if (digitalRead(ModePin)) 

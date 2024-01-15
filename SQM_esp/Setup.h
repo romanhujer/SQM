@@ -10,6 +10,8 @@
 #define ModePin 5         // Mode Pin  
 #define BuzzerPin  4      // Buzzer Pin
 
+#define ONE_WIRE_BUS 2    // One Wire Pin
+
 // I2C mode for BME280 sensor
 // 5V ------ CSB (enables the I2C interface)
 // GND ----- SDO (I2C Address 0x77)
